@@ -1,5 +1,4 @@
 import { Platform, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ReactNativeLegal } from 'react-native-legal';
 
 const BUTTON_BACKGROUND_COLOR = '#8232ff';
