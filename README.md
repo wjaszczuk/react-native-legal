@@ -4,7 +4,7 @@ Automagically generate license acknowledgements for your React Native app 🚀
 
 | Android | iOS | AndroidTV | tvOS |
 | - | - | - | - |
-| ![Android example](./static/android-expo.gif) | ![iOS example](./static/ios-expo.gif) | ![AndroidTV example](./static/android-tv.gif) | ![tvOS example](./static/tvos.gif) |
+| ![Android example](https://github.com/callstackincubator/react-native-legal/raw/main/static/android-expo.gif) | ![iOS example](https://github.com/callstackincubator/react-native-legal/raw/main/static/ios-expo.gif) | ![AndroidTV example](https://github.com/callstackincubator/react-native-legal/raw/main/static/android-tv.gif) | ![tvOS example](https://github.com/callstackincubator/react-native-legal/raw/main/static/tvos.gif) |
 
 ## Installation
 
