@@ -1,6 +1,8 @@
 #!/bin/bash
 
-sdkmanager --list
+sdkmanager --list_installed | grep system-images |grep x86_64
+
+yarn workspace react-native-legal-bare-example android:release
 
 set -x
 echo "Starting the screen recording..."
