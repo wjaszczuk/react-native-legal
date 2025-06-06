@@ -14,6 +14,7 @@ on:
   push:
     branches:
       - master
+      - test/7-maestro-e2e-tests_bis
 
   workflow_dispatch:
 
@@ -25,9 +26,9 @@ env:
 jobs:
   e2e-android:
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
+    strategy:
+      matrix:
+        api-level: [ 34 ]
     steps:
       - name: Enable KVM group perms
         run: |
@@ -66,8 +67,20 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Install Android SDK
-        uses: android-actions/setup-android@v3
+#      - name: Install Android SDK
+#        uses: android-actions/setup-android@v3
+
+#      - name: Gradle cache
+#        uses: gradle/actions/setup-gradle@v3
+#
+#      - name: AVD cache
+#        uses: actions/cache@v4
+#        id: avd-cache
+#        with:
+#          path: |
+#            ~/.android/avd/*
+#            ~/.android/adb*
+#          key: avd-${{ matrix.api-level }}
 
       - name: Install example dependencies
         run:  yarn workspace react-native-legal-bare-example install --frozen-lockfile --immutable
@@ -75,16 +88,25 @@ jobs:
       - name: Bundle app
         run: yarn workspace react-native-legal-bare-example build:android
 
+#      - name: create AVD and generate snapshot for caching
+#        if: steps.avd-cache.outputs.cache-hit != 'true'
+#        uses: reactivecircus/android-emulator-runner@v2
+#        with:
+#          api-level: ${{ matrix.api-level }}
+#          force-avd-creation: false
+#          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#          disable-animations: false
+#          script: echo "Generated AVD snapshot for caching."
+
       - name: Create AVD and generate snapshot for caching
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          target: aosp_atd
-          api-level: 30
-          arch: x86
-          ram-size: 4096M
-          channel: canary
-          profile: pixel
-          avd-name: Pixel_3a_API_30_AOSP
+          api-level: ${{ matrix.api-level }}
+          arch: 'x86_64'
+          target: 'google_apis'
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
           script: ./scripts/e2e_android_emulator_build_and_test.sh
 
       - name: Upload report

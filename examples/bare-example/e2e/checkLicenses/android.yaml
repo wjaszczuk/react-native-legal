@@ -40,6 +40,7 @@ tags:
     containsChild: 'react-native'
     waitToSettleTimeoutMs: 3000
     index: 0
+- assertVisible: A framework for building native applications using React
 - takeScreenshot: 'github_page'
 - stopRecording
 - killApp
