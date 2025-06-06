@@ -18,6 +18,10 @@ on:
 
   workflow_dispatch:
 
+concurrency:
+  group: e2e_tests-android-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   MAESTRO_CLI_NO_ANALYTICS: true
   MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: true
@@ -27,6 +31,7 @@ jobs:
   e2e-android:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         api-level: [ 30, 34, 35 ]
     steps:

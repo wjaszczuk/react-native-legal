@@ -23,10 +23,15 @@ env:
   MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: true
   MAESTRO_DISABLE_UPDATE_CHECK: true
 
+concurrency:
+  group: e2e_tests-ios-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   e2e-ios:
     runs-on: macos-15
     strategy:
+      fail-fast: false
       matrix:
         simulator: [ 'iPhone 16 Pro (18.5)', 'iPhone SE (3rd generation) (18.0)' ]
     steps:
