@@ -38,15 +38,20 @@ tags:
 - back
 - tapOn:
     containsChild: 'react-native'
-    waitToSettleTimeoutMs: 3000
     index: 0
-- tapOn:
-    id: "com.android.chrome:id/signin_fre_dismiss_button"
-    optional: true
-- tapOn:
-    id: "com.android.chrome:id/negative_button"
-    optional: true
+
+- runFlow:
+    when:
+      visible: 'Welcome to Chrome'
+    file: '../common/acceptChrome30TermsAndConditions.yaml'
+
+- runFlow:
+    when:
+      visible: 'Make Chrome your own'
+    file: '../common/acceptChrome35TermsAndConditions.yaml'
+
 - assertVisible: A framework for building native applications using React
 - takeScreenshot: 'e2e_results/github_page'
+- back
 - stopRecording
 - killApp

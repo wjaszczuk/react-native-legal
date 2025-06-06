@@ -1,0 +1,9 @@
+name: "[Android] API 35, Accept Chrome T & C"
+appId: com.android.chrome
+---
+- tapOn:
+      label: Dismiss Chrome sign in
+      id: "com.android.chrome:id/signin_fre_dismiss_button"
+- tapOn:
+      label: "Dismiss Chrome notifications"
+      id: "com.android.chrome:id/negative_button"

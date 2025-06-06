@@ -28,7 +28,7 @@ jobs:
     runs-on: macos-15
     strategy:
       matrix:
-        simulator: [ 'iPhone 16 Pro (18.5)', 'iPhone X' ]
+        simulator: [ 'iPhone 16 Pro (18.5)', 'iPhone SE (3rd generation) (18.0)' ]
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
