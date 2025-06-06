@@ -38,17 +38,20 @@ tags:
 - back
 - tapOn:
     containsChild: 'react-native'
+    waitToSettleTimeoutMs: 3500
     index: 0
 
 - runFlow:
     when:
-      visible: 'Welcome to Chrome'
-    file: '../common/acceptChrome30TermsAndConditions.yaml'
+      visible:
+        text: 'Use without an account'
+    file: '../common/acceptChromeTerms-UseWithoutAnAccountVariant.yaml'
 
 - runFlow:
     when:
-      visible: 'Make Chrome your own'
-    file: '../common/acceptChrome35TermsAndConditions.yaml'
+      visible:
+        text: 'Accept & continue'
+    file: '../common/acceptChromeTerms-AcceptContinueVariant.yaml'
 
 - assertVisible: A framework for building native applications using React
 - takeScreenshot: 'e2e_results/github_page'

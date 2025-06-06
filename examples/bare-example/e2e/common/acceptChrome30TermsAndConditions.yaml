@@ -1,9 +1,0 @@
-name: "[Android] API 30, Accept Chrome T & C"
-appId: com.android.chrome
----
-- tapOn:
-    label: Accept Chrome T & C
-    id: "com.android.chrome:id/terms_accept"
-- tapOn:
-    label: "Turn off Chrome sync"
-    id: "com.android.chrome:id/negative_button"
