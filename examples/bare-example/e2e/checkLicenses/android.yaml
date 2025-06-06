@@ -43,6 +43,9 @@ tags:
 - tapOn:
     id: "com.android.chrome:id/signin_fre_dismiss_button"
     optional: true
+- tapOn:
+    id: "com.android.chrome:id/negative_button"
+    optional: true
 - assertVisible: A framework for building native applications using React
 - takeScreenshot: 'github_page'
 - stopRecording

@@ -70,6 +70,9 @@ jobs:
       - name: Bundle app
         run: yarn workspace react-native-legal-bare-example build:ios
 
+      - name: List simulators
+        run: xcrun simctl list
+
       - name: Build iOS App
         run: yarn workspace react-native-legal-bare-example ios:release --simulator="${{ matrix.simulator }}"
 
