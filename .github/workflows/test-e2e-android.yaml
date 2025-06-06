@@ -90,7 +90,6 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
-          profile: Pixel 2
           arch: 'x86_64'
           target: 'google_apis'
           force-avd-creation: false
@@ -102,7 +101,6 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
-          profile: Pixel 2
           arch: 'x86_64'
           target: 'google_apis'
           force-avd-creation: false
