@@ -47,6 +47,6 @@ tags:
     id: "com.android.chrome:id/negative_button"
     optional: true
 - assertVisible: A framework for building native applications using React
-- takeScreenshot: 'github_page'
+- takeScreenshot: 'e2e_results/github_page'
 - stopRecording
 - killApp
