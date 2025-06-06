@@ -112,3 +112,5 @@ jobs:
         if: always()
         continue-on-error: true
         uses: ./.github/actions/uploadMaestroTestResults
+        with:
+          id: API ${{ matrix.api-level }}

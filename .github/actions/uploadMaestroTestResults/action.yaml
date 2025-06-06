@@ -1,6 +1,11 @@
 name: Upload Maestro test results
 description: Upload Maestro test results as artifacts
 
+inputs:
+  id:
+    description: 'artifact ID'
+    required: true
+
 runs:
   using: composite
   steps:
@@ -8,7 +13,7 @@ runs:
       uses: dorny/test-reporter@v2
       continue-on-error: true
       with:
-        name: Maestro E2E test report
+        name: Maestro E2E test report ${{ steps.random-number-generator.outputs.random-number }}
         path: ${{ github.workspace }}/examples/bare-example/e2e_results/report.xml
         reporter: java-junit
 
@@ -16,7 +21,7 @@ runs:
       uses: actions/upload-artifact@v4
       continue-on-error: true
       with:
-        name: Maestro E2E recordings and screenshots
+        name: Maestro E2E recordings and screenshots ${{ steps.random-number-generator.outputs.random-number }}
         path: |
           ${{ github.workspace }}/examples/bare-example/e2e_results/*.mp4
           ${{ github.workspace }}/examples/bare-example/e2e_results/*.png
@@ -26,6 +31,6 @@ runs:
       uses: actions/upload-artifact@v4
       continue-on-error: true
       with:
-        name: Maestro E2E test logs
+        name: Maestro E2E test logs API ${{ steps.random-number-generator.outputs.random-number }}
         path: |
           ~/.maestro/tests/**

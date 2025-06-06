@@ -14,6 +14,7 @@ on:
   push:
     branches:
       - master
+      - test/7-maestro-e2e-tests_bis
 
   workflow_dispatch:
 
@@ -25,9 +26,9 @@ env:
 jobs:
   e2e-ios:
     runs-on: macos-15
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
+    strategy:
+      matrix:
+        simulator: [ 'iPhone 14 Pro (16.0)']
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -70,7 +71,7 @@ jobs:
         run: yarn workspace react-native-legal-bare-example build:ios
 
       - name: Build iOS App
-        run: yarn workspace react-native-legal-bare-example ios:release
+        run: yarn workspace react-native-legal-bare-example ios:release --simulator="${{ matrix.simulator }}"
 
       - name: Run tests
         run: yarn workspace react-native-legal-bare-example e2e:ios
@@ -79,3 +80,5 @@ jobs:
         if: always()
         continue-on-error: true
         uses: ./.github/actions/uploadMaestroTestResults
+        with:
+          id: ${{ matrix.simulator }}
