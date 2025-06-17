@@ -1,6 +1,14 @@
-# `react-native-legal`
+<a href="https://www.callstack.com/open-source?utm_campaign=generic&utm_source=github&utm_medium=referral&utm_content=react-native-legal" align="center">
+  <picture>
+  <img alt="React Native Legal" src="https://github.com/user-attachments/assets/dd266822-1f3c-48ff-816c-7aaeb95d85aa">
+  </picture>
+</a>
 
-Automagically generate license acknowledgements for your React Native app 🚀
+<p align="center">
+  <b>React Native Legal</b> - Automagically generate license acknowledgements for your React Native app 🚀
+</p>
+
+---
 
 | Android | iOS | AndroidTV | tvOS |
 | - | - | - | - |
