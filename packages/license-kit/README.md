@@ -54,22 +54,32 @@ npx license-kit copyleft --help
 
 #### Command: `copyleft`
 
-Check for copyleft licenses. Exits with error code (≠ 0) if strong copyleft licenses are found.
+Check for copyleft licenses. Exits with error code (≠ 0) if strong copyleft licenses are found. Can be configured to exit with non-zero exit code if weak copyleft licenses are found as well.
 
-| Flag / Option   | Description                                              | Default                   |
-| --------------- | -------------------------------------------------------- | ------------------------- |
-| --root <path>   | Path to the root of your project                         | Current working directory |
-| --error-on-weak | Exit with error code if weak copyleft licenses are found | `false`                   |
+Exit codes:
+
+- `0` - no copyleft licenses found
+- `1` - strong copyleft licenses found
+- `2` - weak copyleft licenses found (if `--error-on-weak` is set)
+
+| Flag / Option                         | Description                                                                                                                                                                                                                                                                                                                                                  | Default                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------- |
+| `--tm, --transitive-deps-mode [mode]` | Controls, which transitive dependencies are included: <ul><li>`'all'`</li> <li>`'from-external-only'` (only transitive dependencies of direct dependencies specified by non-workspace:... specifiers)</li> <li>`'from-workspace-only'` (only transitive dependencies of direct dependencies specified by `workspace:` specifier)</li> <li>`'none'`</li></ul> | `'all'`                   |
+| `--dm, --dev-deps-mode [mode]`        | <ul><li>`'root-only'` (only direct devDependencies from the scanned project's root package.json)</li> <li>`'root-only'`</li></ul>                                                                                                                                                                                                                            | `'none'`                  |
+| `--root [path]`                       | Path to the root of your project                                                                                                                                                                                                                                                                                                                             | Current working directory |
+| `--error-on-weak`                     | Exit with error code if weak copyleft licenses are found                                                                                                                                                                                                                                                                                                     | `false`                   |
 
 #### Command: `report`
 
 Generates a licenses report in the specified format. The output can be written to `stdout` (default) or a file.
 
-| Flag / Option   | Description                                                                                         | Default                   |
-| --------------- | --------------------------------------------------------------------------------------------------- | ------------------------- |
-| --root <path>   | Path to the root of your project                                                                    | Current working directory |
-| --format <type> | Output format, one of: `'json'`, `'about-json'` (AboutLibraries-compatible), `'text'`, `'markdown'` | `'json'`                  |
-| --output <path> | Where to write the output - either `'stdout'` or a path to an output file                           | `'stdout'`                |
+| Flag / Option                         | Description                                                                                                                                                                                                                                                                                                                                                  | Default                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------- |
+| `--tm, --transitive-deps-mode [mode]` | Controls, which transitive dependencies are included: <ul><li>`'all'`</li> <li>`'from-external-only'` (only transitive dependencies of direct dependencies specified by non-workspace:... specifiers)</li> <li>`'from-workspace-only'` (only transitive dependencies of direct dependencies specified by `workspace:` specifier)</li> <li>`'none'`</li></ul> | `'all'`                   |
+| `--dm, --dev-deps-mode [mode]`        | <ul><li>`'root-only'` (only direct devDependencies from the scanned project's root package.json)</li> <li>`'root-only'`</li></ul>                                                                                                                                                                                                                            | `'none'`                  |
+| `--root [path]`                       | Path to the root of your project                                                                                                                                                                                                                                                                                                                             | Current working directory |
+| `--format [type]`                     | Output format, one of: `'json'`, `'about-json'` (AboutLibraries-compatible), `'text'`, `'markdown'`                                                                                                                                                                                                                                                          | `'json'`                  |
+| `--output [path]`                     | Where to write the output - either `'stdout'` or a path to an output file                                                                                                                                                                                                                                                                                    | `'stdout'`                |
 
 #### Command: `help`
 
