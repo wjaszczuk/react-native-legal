@@ -3,12 +3,13 @@ import path from 'path';
 
 import glob from 'glob';
 
-import type {
-  AboutLibrariesLibraryJsonPayload,
-  AboutLibrariesLicenseJsonPayload,
-  AboutLibrariesLikePackageInfo,
-  AggregatedLicensesObj,
-  LicensePlistPayload,
+import {
+  type AboutLibrariesLibraryJsonPayload,
+  type AboutLibrariesLicenseJsonPayload,
+  type AboutLibrariesLikePackageInfo,
+  type AggregatedLicensesObj,
+  type LicensePlistPayload,
+  type ScanPackageOptionsFactory,
 } from './types';
 import { PackageUtils } from './utils';
 
@@ -20,6 +21,7 @@ function scanPackage(
   version: string,
   processedPackages: Set<string>,
   result: AggregatedLicensesObj,
+  scanOptionsFactory: ScanPackageOptionsFactory = PackageUtils.legacyDefaultScanPackageOptionsFactory,
 ) {
   const packageKey = `${packageName}@${version}`;
 
@@ -61,16 +63,27 @@ function scanPackage(
     }
 
     const dependencies = localPackageJson.dependencies;
-
+    const devDependencies = localPackageJson.devDependencies;
     const isWorkspacePackage = version.startsWith('workspace:');
 
-    if (!isWorkspacePackage) return;
+    const scanOptions = scanOptionsFactory({
+      isRoot: false,
+      isWorkspacePackage,
+    });
 
-    if (dependencies) {
-      Object.entries(dependencies).forEach(([depName, depVersion]) => {
-        scanPackage(depName, depVersion as string, processedPackages, result);
-      });
+    // check if transitive dependencies should be scanned
+    if (!scanOptions.includeTransitiveDependencies) {
+      return;
     }
+
+    [
+      // transitive dependencies
+      ...(dependencies ? Object.entries(dependencies) : []),
+      // transitive devDependencies
+      ...(devDependencies && scanOptions.includeDevDependencies ? Object.entries(devDependencies) : []),
+    ].forEach(([depName, depVersion]) => {
+      scanPackage(depName, depVersion as string, processedPackages, result, scanOptionsFactory);
+    });
   } catch (error) {
     console.warn(`[react-native-legal] could not process package.json for ${packageName}`);
   }
@@ -79,17 +92,26 @@ function scanPackage(
 /**
  * Scans `package.json` and searches for all packages under `dependencies` field. Supports monorepo projects.
  */
-export function scanDependencies(appPackageJsonPath: string) {
+export function scanDependencies(
+  appPackageJsonPath: string,
+  scanOptionsFactory: ScanPackageOptionsFactory = PackageUtils.legacyDefaultScanPackageOptionsFactory,
+): AggregatedLicensesObj {
   const appPackageJson = require(path.resolve(appPackageJsonPath));
   const dependencies: Record<string, string> = appPackageJson.dependencies;
+  const devDependencies: Record<string, string> = appPackageJson.devDependencies;
   const result: AggregatedLicensesObj = {};
   const processedPackages = new Set<string>();
 
-  if (dependencies) {
-    Object.entries(dependencies).forEach(([packageName, version]) => {
-      scanPackage(packageName, version, processedPackages, result);
-    });
-  }
+  const rootScanOptions = scanOptionsFactory({ isRoot: true, isWorkspacePackage: false });
+
+  [
+    // dependencies
+    ...(dependencies ? Object.entries(dependencies) : []),
+    // devDependencies
+    ...(devDependencies && rootScanOptions.includeDevDependencies ? Object.entries(devDependencies) : []),
+  ].forEach(([packageName, version]) => {
+    scanPackage(packageName, version, processedPackages, result, scanOptionsFactory);
+  });
 
   return result;
 }
