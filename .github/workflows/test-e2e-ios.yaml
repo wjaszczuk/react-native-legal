@@ -9,7 +9,6 @@ on:
       - 'packages/react-native-legal/**/*.[tj]sx?'
       - 'packages/react-native-legal/ios/**'
       - 'packages/shared/**/*.[tj]sx?'
-      - 'packages/license-kit/**/*.[tj]sx?'
       - 'examples/bare-example/**/*.[tj]sx?'
       - 'examples/bare-example/ios/**'
 
