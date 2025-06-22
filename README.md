@@ -36,7 +36,7 @@ Automagically generate license acknowledgements for your React Native app and an
 
 | Android                                                                                                       | iOS                                                                                                   | AndroidTV                                                                                                     | tvOS                                                                                               |
 | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| ![Android example](https://github.com/callstackincubator/react-native-legal/raw/main/static/android-expo.gif) | ![iOS example](https://github.com/callstackincubator/react-native-legal/raw/main/static/ios-expo.gif) | ![AndroidTV example](https://github.com/callstackincubator/react-native-legal/raw/main/static/android-tv.gif) | ![tvOS example](https://github.com/callstackincubator/react-native-legal/raw/main/static/tvos.gif) |
+| ![Android example](https://github.com/callstackincubator/react-native-legal/raw/main/static/android-expo.gif) | ![iOS example](https://github.com/callstackincubator/react-native-legal/raw/main/static/ios-bare.gif) | ![AndroidTV example](https://github.com/callstackincubator/react-native-legal/raw/main/static/android-tv.gif) | ![tvOS example](https://github.com/callstackincubator/react-native-legal/raw/main/static/tvos.gif) |
 
 ## Documentation
 
@@ -71,13 +71,13 @@ npm i --save-dev license-kit
 ### Node.js - API
 
 ```sh
-yarn add @callstack/react-native-legal-shared
+yarn add -D @callstack/react-native-legal-shared
 ```
 
 or
 
 ```sh
-npm i --save @callstack/react-native-legal-shared
+npm i --save-dev @callstack/react-native-legal-shared
 ```
 
 ## Usage
