@@ -1,4 +1,16 @@
-# license-kit
+<a href="https://www.callstack.com/open-source?utm_campaign=generic&utm_source=github&utm_medium=referral&utm_content=license-kit" align="center">
+  <picture>
+    <img alt="License Kit" src="https://github.com/callstackincubator/react-native-legal/blob/main/images/license-kit-banner.jpg">
+  </picture>
+</a>
+
+<p align="center">
+  <b>License Kit</b> - Aggregate license notes of OSS libraries used in your Node.js project 🚀
+</p>
+
+![Release](https://github.com/callstackincubator/react-native-legal/actions/workflows/release.yml/badge.svg)
+![Deploy Docs](https://github.com/callstackincubator/react-native-legal/actions/workflows/deploy-docs.yml/badge.svg)
+![Integration tests - License Kit (Node)](https://github.com/callstackincubator/react-native-legal/actions/workflows/test-integration-node.yml/badge.svg)
 
 A CLI for managing and analyzing Open Source Software (OSS) licenses in your Node.js projects. This package helps you aggregate license information and ensure compliance with license requirements.
 

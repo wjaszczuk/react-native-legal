@@ -1,4 +1,16 @@
+<a href="https://www.callstack.com/open-source?utm_campaign=generic&utm_source=github&utm_medium=referral&utm_content=@callstack/licenses" align="center">
+  <picture>
+    <img alt="Licenses" src="https://github.com/callstackincubator/react-native-legal/blob/main/images/licenses-banner.jpg">
+  </picture>
+</a>
+
 # @callstack/licenses
+
+![Release](https://github.com/callstackincubator/react-native-legal/actions/workflows/release.yml/badge.svg)
+![Deploy Docs](https://github.com/callstackincubator/react-native-legal/actions/workflows/deploy-docs.yml/badge.svg)
+![Unit tests - @callstack/licenses](https://github.com/callstackincubator/react-native-legal/actions/workflows/test-unit-licenses-api.yml/badge.svg)
+
+API package that exposes functionalities for programmatic scanning of licenses in Node.js projects. It is used by the `license-kit` CLI tool and can be used directly in your Node.js scripts.
 
 ## Features
 
