@@ -37,6 +37,7 @@ local.properties
 android/config/
 ios/Settings.bundle/
 ios/license_plist.yml
+.rnef/
 
 # node.js
 #
