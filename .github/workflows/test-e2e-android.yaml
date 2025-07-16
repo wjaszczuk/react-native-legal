@@ -60,6 +60,7 @@ jobs:
           variant: release
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sign: false
+          comment-bot: false
           working-directory: ./examples/bare-example
 
   run-e2e-tests:

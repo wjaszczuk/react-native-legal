@@ -57,6 +57,7 @@ jobs:
           configuration: 'Release'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: ./examples/bare-example
+          comment-bot: false
 
   run-e2e-tests:
     runs-on: macos-15
