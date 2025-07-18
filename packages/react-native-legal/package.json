@@ -49,6 +49,7 @@
     "tsc": "tsc"
   },
   "devDependencies": {
+    "@rnef/config": "^0.8.0",
     "@types/glob": "^8.1.0",
     "@types/xml2js": "^0.4.11",
     "expo": "~52.0.36",
