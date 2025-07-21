@@ -73,15 +73,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download and Unpack APK artifact
+      - name: Download artifact
         run: |
-          curl -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -o artifact.zip "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ needs.build-release.outputs.artifact-id }}/zip"
-          unzip artifact.zip -d downloaded-artifacts
-          tar zxf downloaded-artifacts/app.tar.gz -C downloaded-artifacts
-          ls -l downloaded-artifacts
-          APP_PATH=$(pwd)/$(find downloaded-artifacts -name "*.app" -print -quit)
-          echo "ARTIFACT_PATH_FOR_E2E=$APP_PATH" >> $GITHUB_ENV
-        shell: bash
+          npx rnef remote-cache download --name "${{ needs.build-release.outputs.artifact-id }}"
 
       - name: Setup
         uses: ./.github/actions/setup
