@@ -38,6 +38,8 @@ android/config/
 ios/Settings.bundle/
 ios/license_plist.yml
 .rnef/
+.env
+.env.local
 
 # node.js
 #

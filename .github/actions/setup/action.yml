@@ -13,3 +13,9 @@ runs:
     - name: Install dependencies
       run: yarn install --immutable
       shell: bash
+
+    - name: Extract repository name from GITHUB_REPOSITORY
+      shell: bash
+      run: |
+        REPO_NAME="${GITHUB_REPOSITORY##*/}"
+        echo "GITHUB_REPOSITORY_NAME=$REPO_NAME" >> "$GITHUB_ENV"

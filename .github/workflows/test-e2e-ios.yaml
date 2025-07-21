@@ -73,12 +73,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download artifact
-        run: |
-          npx rnef remote-cache download --name "${{ needs.build-release.outputs.artifact-id }}"
-
       - name: Setup
         uses: ./.github/actions/setup
+
+      - name: Download artifact
+        run: |
+          cd examples/bare-example
+          npx rnef remote-cache download --name "${{ needs.build-release.outputs.artifact-id }}"
 
       - name: Install Maestro
         uses: ./.github/actions/installMaestro
