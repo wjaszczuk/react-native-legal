@@ -38,7 +38,6 @@
 		8AC81D6E2FC4D1EA81B37955 /* libPods-ReactNativeLegalBareExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ReactNativeLegalBareExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		98D52CFD7B034EB3FA34C2CB /* Pods-ReactNativeLegalBareExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeLegalBareExample.release.xcconfig"; path = "Target Support Files/Pods-ReactNativeLegalBareExample/Pods-ReactNativeLegalBareExample.release.xcconfig"; sourceTree = "<group>"; };
 		E7115FBA2E24FEC0005CF621 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ReactNativeLegalBareExample/AppDelegate.swift; sourceTree = "<group>"; };
-		E7115FBC2E24FEC3005CF621 /* ReactNativeLegalBareExample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ReactNativeLegalBareExample-Bridging-Header.h"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -69,7 +68,6 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
-				E7115FBC2E24FEC3005CF621 /* ReactNativeLegalBareExample-Bridging-Header.h */,
 			);
 			name = ReactNativeLegalBareExample;
 			sourceTree = "<group>";
