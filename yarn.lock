@@ -4467,6 +4467,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@clack/core@npm:0.4.2":
+  version: 0.4.2
+  resolution: "@clack/core@npm:0.4.2"
+  dependencies:
+    picocolors: ^1.0.0
+    sisteransi: ^1.0.5
+  checksum: 082a807771d75a3b5522db4b8c3b32b03908f0a947880f8a6c20e479ffeb62dba833226df541f3297ae747033d604b7f9fc9caa6ace489c9a3cbc0398e7b8228
+  languageName: node
+  linkType: hard
+
+"@clack/prompts@npm:^0.10.0":
+  version: 0.10.1
+  resolution: "@clack/prompts@npm:0.10.1"
+  dependencies:
+    "@clack/core": 0.4.2
+    picocolors: ^1.0.0
+    sisteransi: ^1.0.5
+  checksum: 8fcaf8bc9eefbd0eca973744a388a92e0af1ba7de80b2ea8b20c7affd5a5cf9128ed95fb72fe997158a35aed7f5e4de300d50b01728f4c900166078a629deb90
+  languageName: node
+  linkType: hard
+
 "@commitlint/cli@npm:^17.6.6":
   version: 17.6.7
   resolution: "@commitlint/cli@npm:17.6.7"
@@ -5133,7 +5154,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@expo/fingerprint@npm:0.11.11":
+"@expo/fingerprint@npm:0.11.11, @expo/fingerprint@npm:^0.11.6":
   version: 0.11.11
   resolution: "@expo/fingerprint@npm:0.11.11"
   dependencies:
@@ -5408,6 +5429,15 @@ __metadata:
     wrap-ansi: ^8.1.0
     wrap-ansi-cjs: "npm:wrap-ansi@^7.0.0"
   checksum: 4a473b9b32a7d4d3cfb7a614226e555091ff0c5a29a1734c28c72a182c2f6699b26fc6b5c2131dfd841e86b185aea714c72201d7c98c2fba5f17709333a67aeb
+  languageName: node
+  linkType: hard
+
+"@isaacs/fs-minipass@npm:^4.0.0":
+  version: 4.0.1
+  resolution: "@isaacs/fs-minipass@npm:4.0.1"
+  dependencies:
+    minipass: ^7.0.4
+  checksum: 5d36d289960e886484362d9eb6a51d1ea28baed5f5d0140bbe62b99bac52eaf06cc01c2bc0d3575977962f84f6b2c4387b043ee632216643d4787b0999465bf2
   languageName: node
   linkType: hard
 
@@ -6572,6 +6602,50 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rnef/config@npm:0.8.3":
+  version: 0.8.3
+  resolution: "@rnef/config@npm:0.8.3"
+  dependencies:
+    "@babel/code-frame": ^7.26.2
+    "@rnef/provider-github": ^0.8.3
+    "@rnef/tools": ^0.8.3
+    joi: ^17.13.3
+    tslib: ^2.3.0
+  checksum: cdafe3b39c922eaae9f8b9e0b90fc5cc3d6c2aefceb5dc81be9182fb504dd6eec581c9a8c0691f983b9806129a682968531d93baab55e748415c63461c59b9ce
+  languageName: node
+  linkType: hard
+
+"@rnef/provider-github@npm:^0.8.3":
+  version: 0.8.3
+  resolution: "@rnef/provider-github@npm:0.8.3"
+  dependencies:
+    "@rnef/tools": ^0.8.3
+    ts-regex-builder: ^1.8.2
+    tslib: ^2.3.0
+  checksum: da9c1e6a984d694accf14bbaa00fe23257e668146d8882a3492cf3477ae4b81f22aeaf552df4c60fea79aafba902f78e0a287c27cb26452379840b4f11ca0824
+  languageName: node
+  linkType: hard
+
+"@rnef/tools@npm:^0.8.3":
+  version: 0.8.3
+  resolution: "@rnef/tools@npm:0.8.3"
+  dependencies:
+    "@clack/prompts": ^0.10.0
+    "@expo/fingerprint": ^0.11.6
+    "@types/adm-zip": ^0.5.7
+    adm-zip: ^0.5.16
+    appdirsjs: ^1.2.7
+    fast-glob: ^3.3.2
+    is-unicode-supported: ^2.1.0
+    nano-spawn: ^0.2.0
+    picocolors: ^1.1.1
+    string-argv: ^0.3.2
+    tar: ^7.4.3
+    tslib: ^2.3.0
+  checksum: f9c3ebae2f3421262ec517c0205ed527c62390c1995ec9f2606154882c0205e0e5d265dccd93bcf167da76d51cfcdb6535e66ba93d49a076255ecfae1c3028f9
+  languageName: node
+  linkType: hard
+
 "@rsbuild/core@npm:~1.4.6":
   version: 1.4.7
   resolution: "@rsbuild/core@npm:1.4.7"
@@ -7174,6 +7248,15 @@ __metadata:
   dependencies:
     tslib: ^2.4.0
   checksum: c3034e0535b91f28dc74c72fc538f353cda0fa9107bb313e8b89f101402b7dc8e400442d07560775cdd7cb63d33549867ed776372fbaa41dc68bcd108e5cff8a
+  languageName: node
+  linkType: hard
+
+"@types/adm-zip@npm:^0.5.7":
+  version: 0.5.7
+  resolution: "@types/adm-zip@npm:0.5.7"
+  dependencies:
+    "@types/node": "*"
+  checksum: 57fe73622e38234bc76786354237e8545eefa05d55e34aa3c7c51b33588bb9e80787f163fdb4fa3afc2c123cfd17e1619e37f6be57cde2e58b7949f30a8b093c
   languageName: node
   linkType: hard
 
@@ -7966,6 +8049,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"adm-zip@npm:^0.5.16":
+  version: 0.5.16
+  resolution: "adm-zip@npm:0.5.16"
+  checksum: 1f4104f3462b99e1b34d78ccfbdcf47e533a9cc7f894cedec6cd67b06cc6ad0b3a45241d66df5471050c7abbdd67e5707e3959fc76d75176ed6101a5b2a580d5
+  languageName: node
+  linkType: hard
+
 "agent-base@npm:6, agent-base@npm:^6.0.2":
   version: 6.0.2
   resolution: "agent-base@npm:6.0.2"
@@ -8147,7 +8237,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"appdirsjs@npm:^1.2.4":
+"appdirsjs@npm:^1.2.4, appdirsjs@npm:^1.2.7":
   version: 1.2.7
   resolution: "appdirsjs@npm:1.2.7"
   checksum: 3411b4e31edf8687ad69638ef81b92b4889ad31e527b673a364990c28c99b6b8c3ea81b2b2b636d5b08e166a18706c4464fd8436b298f85384d499ba6b8dc4b7
@@ -9348,6 +9438,13 @@ __metadata:
   version: 2.0.0
   resolution: "chownr@npm:2.0.0"
   checksum: c57cf9dd0791e2f18a5ee9c1a299ae6e801ff58fee96dc8bfd0dcb4738a6ce58dd252a3605b1c93c6418fe4f9d5093b28ffbf4d66648cb2a9c67eaef9679be2f
+  languageName: node
+  linkType: hard
+
+"chownr@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "chownr@npm:3.0.0"
+  checksum: fd73a4bab48b79e66903fe1cafbdc208956f41ea4f856df883d0c7277b7ab29fd33ee65f93b2ec9192fc0169238f2f8307b7735d27c155821d886b84aa97aa8d
   languageName: node
   linkType: hard
 
@@ -14454,6 +14551,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-unicode-supported@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "is-unicode-supported@npm:2.1.0"
+  checksum: f254e3da6b0ab1a57a94f7273a7798dd35d1d45b227759f600d0fa9d5649f9c07fa8d3c8a6360b0e376adf916d151ec24fc9a50c5295c58bae7ca54a76a063f9
+  languageName: node
+  linkType: hard
+
 "is-weakmap@npm:^2.0.2":
   version: 2.0.2
   resolution: "is-weakmap@npm:2.0.2"
@@ -15338,7 +15442,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"joi@npm:^17.2.1":
+"joi@npm:^17.13.3, joi@npm:^17.2.1":
   version: 17.13.3
   resolution: "joi@npm:17.13.3"
   dependencies:
@@ -17387,7 +17491,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minipass@npm:^7.0.3, minipass@npm:^7.1.2":
+"minipass@npm:^7.0.3, minipass@npm:^7.0.4, minipass@npm:^7.1.2":
   version: 7.1.2
   resolution: "minipass@npm:7.1.2"
   checksum: 2bfd325b95c555f2b4d2814d49325691c7bee937d753814861b0b49d5edcda55cbbf22b6b6a60bb91eddac8668771f03c5ff647dcd9d0f798e9548b9cdc46ee3
@@ -17401,6 +17505,15 @@ __metadata:
     minipass: ^3.0.0
     yallist: ^4.0.0
   checksum: f1fdeac0b07cf8f30fcf12f4b586795b97be856edea22b5e9072707be51fc95d41487faec3f265b42973a304fe3a64acd91a44a3826a963e37b37bafde0212c3
+  languageName: node
+  linkType: hard
+
+"minizlib@npm:^3.0.1":
+  version: 3.0.2
+  resolution: "minizlib@npm:3.0.2"
+  dependencies:
+    minipass: ^7.1.2
+  checksum: 493bed14dcb6118da7f8af356a8947cf1473289c09658e5aabd69a737800a8c3b1736fb7d7931b722268a9c9bc038a6d53c049b6a6af24b34a121823bb709996
   languageName: node
   linkType: hard
 
@@ -17421,6 +17534,15 @@ __metadata:
   bin:
     mkdirp: bin/cmd.js
   checksum: a96865108c6c3b1b8e1d5e9f11843de1e077e57737602de1b82030815f311be11f96f09cce59bd5b903d0b29834733e5313f9301e3ed6d6f6fba2eae0df4298f
+  languageName: node
+  linkType: hard
+
+"mkdirp@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "mkdirp@npm:3.0.1"
+  bin:
+    mkdirp: dist/cjs/src/bin.js
+  checksum: 972deb188e8fb55547f1e58d66bd6b4a3623bf0c7137802582602d73e6480c1c2268dcbafbfb1be466e00cc7e56ac514d7fd9334b7cf33e3e2ab547c16f83a8d
   languageName: node
   linkType: hard
 
@@ -17471,6 +17593,13 @@ __metadata:
     object-assign: ^4.0.1
     thenify-all: ^1.0.0
   checksum: 8427de0ece99a07e9faed3c0c6778820d7543e3776f9a84d22cf0ec0a8eb65f6e9aee9c9d353ff9a105ff62d33a9463c6ca638974cc652ee8140cd1e35951c87
+  languageName: node
+  linkType: hard
+
+"nano-spawn@npm:^0.2.0":
+  version: 0.2.1
+  resolution: "nano-spawn@npm:0.2.1"
+  checksum: 334a160795c8a1007b87eebf643bb814542d6eed3136e242af751021f46564cbcb32964fe80150bd03904a06f1a1a50999b776141d01421081bfc0fb60da37e2
   languageName: node
   linkType: hard
 
@@ -18882,6 +19011,7 @@ __metadata:
   resolution: "react-native-legal@workspace:packages/react-native-legal"
   dependencies:
     "@callstack/licenses": ^0.2.1
+    "@rnef/config": 0.8.3
     "@types/glob": ^8.1.0
     "@types/xml2js": ^0.4.11
     expo: ~52.0.36
@@ -20702,6 +20832,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"string-argv@npm:^0.3.2":
+  version: 0.3.2
+  resolution: "string-argv@npm:0.3.2"
+  checksum: 8703ad3f3db0b2641ed2adbb15cf24d3945070d9a751f9e74a924966db9f325ac755169007233e8985a39a6a292f14d4fee20482989b89b96e473c4221508a0f
+  languageName: node
+  linkType: hard
+
 "string-length@npm:^4.0.1":
   version: 4.0.2
   resolution: "string-length@npm:4.0.2"
@@ -21190,6 +21327,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tar@npm:^7.4.3":
+  version: 7.4.3
+  resolution: "tar@npm:7.4.3"
+  dependencies:
+    "@isaacs/fs-minipass": ^4.0.0
+    chownr: ^3.0.0
+    minipass: ^7.1.2
+    minizlib: ^3.0.1
+    mkdirp: ^3.0.1
+    yallist: ^5.0.0
+  checksum: 8485350c0688331c94493031f417df069b778aadb25598abdad51862e007c39d1dd5310702c7be4a6784731a174799d8885d2fde0484269aea205b724d7b2ffa
+  languageName: node
+  linkType: hard
+
 "temp-dir@npm:^2.0.0, temp-dir@npm:~2.0.0":
   version: 2.0.0
   resolution: "temp-dir@npm:2.0.0"
@@ -21522,6 +21673,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ts-regex-builder@npm:^1.8.2":
+  version: 1.8.2
+  resolution: "ts-regex-builder@npm:1.8.2"
+  checksum: b9f99d93724e64cc0edad17b3f1e83767d5a0403806491475ada0957a005a6ebffd3f5b7ef5db982e719c2a8af4de371450ae9067513e6285904a72cf7f24f9b
+  languageName: node
+  linkType: hard
+
 "tsconfig-paths@npm:^3.14.2":
   version: 3.14.2
   resolution: "tsconfig-paths@npm:3.14.2"
@@ -21560,17 +21718,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:^2.3.0, tslib@npm:^2.6.2, tslib@npm:^2.8.0":
+  version: 2.8.1
+  resolution: "tslib@npm:2.8.1"
+  checksum: e4aba30e632b8c8902b47587fd13345e2827fa639e7c3121074d5ee0880723282411a8838f830b55100cbe4517672f84a2472667d355b81e8af165a55dc6203a
+  languageName: node
+  linkType: hard
+
 "tslib@npm:^2.5.0, tslib@npm:^2.6.0":
   version: 2.6.1
   resolution: "tslib@npm:2.6.1"
   checksum: b0d176d176487905b66ae4d5856647df50e37beea7571c53b8d10ba9222c074b81f1410fb91da13debaf2cbc970663609068bdebafa844ea9d69b146527c38fe
-  languageName: node
-  linkType: hard
-
-"tslib@npm:^2.6.2, tslib@npm:^2.8.0":
-  version: 2.8.1
-  resolution: "tslib@npm:2.8.1"
-  checksum: e4aba30e632b8c8902b47587fd13345e2827fa639e7c3121074d5ee0880723282411a8838f830b55100cbe4517672f84a2472667d355b81e8af165a55dc6203a
   languageName: node
   linkType: hard
 
@@ -22756,6 +22914,13 @@ __metadata:
   version: 4.0.0
   resolution: "yallist@npm:4.0.0"
   checksum: 343617202af32df2a15a3be36a5a8c0c8545208f3d3dfbc6bb7c3e3b7e8c6f8e7485432e4f3b88da3031a6e20afa7c711eded32ddfb122896ac5d914e75848d5
+  languageName: node
+  linkType: hard
+
+"yallist@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "yallist@npm:5.0.0"
+  checksum: eba51182400b9f35b017daa7f419f434424410691bbc5de4f4240cc830fdef906b504424992700dc047f16b4d99100a6f8b8b11175c193f38008e9c96322b6a5
   languageName: node
   linkType: hard
 
