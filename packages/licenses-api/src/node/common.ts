@@ -10,6 +10,7 @@ import type {
   AboutLibrariesLikePackageInfo,
   AggregatedLicensesMapping,
   DependencyType,
+  License,
   LicensePlistPayload,
   ParentPackageInfo,
   ScanPackageCallContext,
@@ -20,6 +21,79 @@ import { YamlUtils } from '../utils';
 import { PackageUtils } from './utils';
 
 type InternalScanGroupSpecifier = { packages: [depName: string, depVersion: string][]; dependencyType: DependencyType };
+
+/**
+ * Collects license information for a given list of package directories, e.g. the packages found in the Metro dependency graph.
+ * Unlike {@link scanDependencies}, it does not scan dependencies of the packages - the list is expected to be complete.
+ *
+ * @param packageRoots Paths to the root directories of the packages (directories containing `package.json`)
+ * @returns Aggregated licenses object containing the given packages and their license information
+ */
+export function scanPackageRoots(packageRoots: string[]): AggregatedLicensesMapping {
+  const result: AggregatedLicensesMapping = {};
+
+  for (const packageRoot of packageRoots) {
+    const packageJsonPath = path.join(packageRoot, 'package.json');
+
+    if (!fs.existsSync(packageJsonPath)) {
+      console.warn(`[react-native-legal] skipping ${packageRoot} could not find package.json`);
+      continue;
+    }
+
+    try {
+      const packageJson = require(path.resolve(packageJsonPath));
+
+      if (!packageJson.name || packageJson.private === true) {
+        continue;
+      }
+
+      const licenseInfo = readPackageLicenseInfo(packageJsonPath);
+
+      result[`${licenseInfo.name}@${licenseInfo.version}`] = {
+        ...licenseInfo,
+        dependencyType: 'dependency',
+        requiredVersion: licenseInfo.version,
+        parentPackages: [],
+      };
+    } catch (error) {
+      console.warn(`[react-native-legal] could not process package.json in ${packageRoot}`);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Reads license information of a single package, based only on its own files
+ * (package.json and LICENSE file), without any context of how the package was found
+ *
+ * @param packageJsonPath Path to the package.json file of the package
+ */
+function readPackageLicenseInfo(
+  packageJsonPath: string,
+): Pick<
+  License,
+  'name' | 'author' | 'description' | 'rawLicense' | 'license' | 'licenseIds' | 'licenseFiles' | 'url' | 'version'
+> {
+  const packageJson = require(path.resolve(packageJsonPath));
+
+  const rawLicense = PackageUtils.parseLicenseField(packageJson) ?? null;
+  const license = parseLicenseExpression(rawLicense);
+  const licenseIds = collectLicenseIds(license);
+  const licenseFiles = PackageUtils.readLicenseFiles(path.dirname(packageJsonPath), licenseIds);
+
+  return {
+    name: packageJson.name,
+    author: PackageUtils.parseAuthorField(packageJson),
+    description: packageJson.description,
+    rawLicense,
+    license,
+    licenseIds,
+    licenseFiles,
+    url: PackageUtils.parseRepositoryFieldToUrl(packageJson),
+    version: packageJson.version,
+  };
+}
 
 /**
  * Scans a single package and its dependencies for license information
@@ -94,21 +168,9 @@ function scanPackage(
           parentPackageInfo,
         ];
       } else {
-        const rawLicense = PackageUtils.parseLicenseField(localPackageJson) ?? null;
-        const license = parseLicenseExpression(rawLicense);
-        const licenseIds = collectLicenseIds(license);
-        const licenseFiles = PackageUtils.readLicenseFiles(path.dirname(localPackageJsonPath), licenseIds);
-
         result[resolvedVersionPackageKey] = {
+          ...readPackageLicenseInfo(localPackageJsonPath),
           name: packageName,
-          author: PackageUtils.parseAuthorField(localPackageJson),
-          description: localPackageJson.description,
-          rawLicense,
-          license,
-          licenseIds,
-          licenseFiles,
-          url: PackageUtils.parseRepositoryFieldToUrl(localPackageJson),
-          version: localPackageJson.version,
           requiredVersion,
           parentPackages: parentPackageInfo ? [parentPackageInfo] : [],
           parentPackageRequiredVersion,
