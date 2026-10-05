@@ -1,5 +1,5 @@
 import type { LicenseExpression } from '../../types';
-import { collectLicenseIds, parseLicenseExpression } from '../licenseExpression';
+import { collectLicenseIds, parseLicenseExpression, renderLicenseExpression } from '../licenseExpression';
 
 describe('parseLicenseExpression', () => {
   it('when raw license is null, then it returns kind unknown, and raw null', () => {
@@ -79,4 +79,64 @@ describe('collectLicenseIds', () => {
   it('when license is unknown with no raw value, then it returns an empty list', () => {
     expect(collectLicenseIds({ kind: 'unknown', raw: null })).toEqual([]);
   });
+});
+
+const MIT: LicenseExpression = { kind: 'license', id: 'MIT' };
+const APACHE: LicenseExpression = { kind: 'license', id: 'Apache-2.0' };
+const ISC: LicenseExpression = { kind: 'license', id: 'ISC' };
+
+const VALID_EXPRESSIONS: [LicenseExpression, string][] = [
+  [MIT, 'MIT'],
+  [{ kind: 'or', left: MIT, right: APACHE }, 'MIT OR Apache-2.0'],
+  [{ kind: 'and', left: MIT, right: APACHE }, 'MIT AND Apache-2.0'],
+  // AND inside OR needs no parentheses, since AND binds tighter
+  [{ kind: 'or', left: MIT, right: { kind: 'and', left: APACHE, right: ISC } }, 'MIT OR Apache-2.0 AND ISC'],
+  [{ kind: 'or', left: { kind: 'and', left: MIT, right: APACHE }, right: ISC }, 'MIT AND Apache-2.0 OR ISC'],
+  // OR inside AND needs parentheses on either side
+  [{ kind: 'and', left: { kind: 'or', left: MIT, right: APACHE }, right: ISC }, '(MIT OR Apache-2.0) AND ISC'],
+  [{ kind: 'and', left: MIT, right: { kind: 'or', left: APACHE, right: ISC } }, 'MIT AND (Apache-2.0 OR ISC)'],
+  // a right-nested chain of the same operator needs no parentheses
+  [{ kind: 'or', left: MIT, right: { kind: 'or', left: APACHE, right: ISC } }, 'MIT OR Apache-2.0 OR ISC'],
+  [{ kind: 'and', left: MIT, right: { kind: 'and', left: APACHE, right: ISC } }, 'MIT AND Apache-2.0 AND ISC'],
+  // a left-nested chain of the same operator keeps its parentheses, otherwise it would parse back right-nested
+  [{ kind: 'or', left: { kind: 'or', left: MIT, right: APACHE }, right: ISC }, '(MIT OR Apache-2.0) OR ISC'],
+  [{ kind: 'and', left: { kind: 'and', left: MIT, right: APACHE }, right: ISC }, '(MIT AND Apache-2.0) AND ISC'],
+  [
+    {
+      kind: 'and',
+      left: { kind: 'or', left: MIT, right: APACHE },
+      right: { kind: 'or', left: MIT, right: ISC },
+    },
+    '(MIT OR Apache-2.0) AND (MIT OR ISC)',
+  ],
+];
+
+describe('renderLicenseExpression', () => {
+  it.each(VALID_EXPRESSIONS)('when expression is %o, then it renders %s', (expression, expectedResult) => {
+    expect(renderLicenseExpression(expression)).toBe(expectedResult);
+  });
+
+  it('when license is unknown, then it renders the raw value', () => {
+    expect(renderLicenseExpression({ kind: 'unknown', raw: 'SEE LICENSE IN LICENSE.md' })).toBe(
+      'SEE LICENSE IN LICENSE.md',
+    );
+  });
+
+  it('when license is unknown with no raw value, then it renders unknown', () => {
+    expect(renderLicenseExpression({ kind: 'unknown', raw: null })).toBe('unknown');
+  });
+
+  it.each(VALID_EXPRESSIONS)(
+    'when expression %o is rendered and parsed back, then it is the same tree',
+    (expression) => {
+      expect(parseLicenseExpression(renderLicenseExpression(expression))).toEqual(expression);
+    },
+  );
+
+  it.each(VALID_EXPRESSIONS.map(([, rendered]) => rendered))(
+    'when normalized raw license %s is parsed and rendered back, then it is unchanged',
+    (rawLicense) => {
+      expect(renderLicenseExpression(parseLicenseExpression(rawLicense))).toBe(rawLicense);
+    },
+  );
 });

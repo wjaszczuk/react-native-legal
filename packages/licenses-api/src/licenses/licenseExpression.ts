@@ -36,6 +36,7 @@ function mapSpdxParsedValueToLicenseExpression(spdxParsedValue: parse.Info): Lic
     };
   }
 
+  // TODO: implement exception and plus keys
   return { kind: 'license', id: spdxParsedValue.license };
 }
 
@@ -58,4 +59,55 @@ export function collectLicenseIds(expression: LicenseExpression): string[] {
     case 'unknown':
       return [];
   }
+}
+
+/**
+ * Renders a License Expression to a string, following the SPDX License Expression syntax.
+ *
+ * Adds only the parentheses required by SPDX precedence and by the right-nesting of operator chains,
+ * so that parsing the result gives back the same tree. An Unknown License renders as its original value
+ * (or `unknown` when absent) and is not expected to parse back to the same tree.
+ *
+ * @param expression the License Expression to render
+ * @returns the rendered License Expression
+ * @example
+ * renderLicenseExpression(parseLicenseExpression('(MIT OR Apache-2.0) AND ISC'));
+ * // '(MIT OR Apache-2.0) AND ISC'
+ */
+export function renderLicenseExpression(expression: LicenseExpression): string {
+  switch (expression.kind) {
+    case 'unknown':
+      return expression.raw ?? 'unknown';
+    case 'or':
+    case 'and': {
+      const left = renderOperand(expression.left, expression.kind, 'left');
+      const right = renderOperand(expression.right, expression.kind, 'right');
+
+      return `${left} ${expression.kind.toUpperCase()} ${right}`;
+    }
+
+    case 'license':
+      return expression.id;
+  }
+}
+
+function renderOperand(
+  operand: LicenseExpression,
+  parentKind: 'or' | 'and',
+  operandPosition: 'left' | 'right',
+): string {
+  const rendered = renderLicenseExpression(operand);
+
+  return shouldAddParenthesis(operand, parentKind, operandPosition) ? `(${rendered})` : rendered;
+}
+
+function shouldAddParenthesis(
+  childExpression: LicenseExpression,
+  parentKind: 'or' | 'and',
+  childPosition: 'left' | 'right',
+): boolean {
+  return (
+    (parentKind === 'and' && childExpression.kind === 'or') ||
+    (childPosition === 'left' && parentKind === childExpression.kind)
+  );
 }
