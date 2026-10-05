@@ -2,14 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
-import {
-  LicenseCategory,
-  STRONG_COPYLEFT_LICENSES_LOWERCASE,
-  WEAK_COPYLEFT_LICENSES_LOWERCASE,
-  analyzeLicenses,
-  categorizeLicense,
-  scanDependencies,
-} from '@callstack/licenses';
+import { LicenseCategory, analyzeLicenses, categorizeLicense, scanDependencies } from '@callstack/licenses';
+import type { Color } from 'colorette';
 import { bold, green, italic, red, underline, whiteBright, yellow, yellowBright } from 'colorette';
 import type { Command } from 'commander';
 import { type TableUserConfig, getBorderCharacters, table } from 'table';
@@ -28,14 +22,18 @@ const categoryToEmojiMapping: Record<LicenseCategory, string> = {
   [LicenseCategory.UNKNOWN]: '❓',
 };
 
+const categoryToColorMapping: Record<LicenseCategory, Color> = {
+  [LicenseCategory.PERMISSIVE]: (input) => input.toString(),
+  [LicenseCategory.WEAK_COPYLEFT]: yellow,
+  [LicenseCategory.STRONG_COPYLEFT]: red,
+  [LicenseCategory.UNKNOWN]: yellow,
+};
+
 function getLicenseColor(license: string): string {
-  if (license === 'unknown') return yellow(license);
+  const licenseCategory = categorizeLicense(license);
+  const licenseColorFn = categoryToColorMapping[licenseCategory];
 
-  if (WEAK_COPYLEFT_LICENSES_LOWERCASE.has(license)) return yellow(license);
-
-  if (STRONG_COPYLEFT_LICENSES_LOWERCASE.has(license)) return red(license);
-
-  return license;
+  return licenseColorFn(license);
 }
 
 export default function analyzeCommandSetup(program: Command): Command {
@@ -173,11 +171,7 @@ export default function analyzeCommandSetup(program: Command): Command {
       byLicenseEntries
         .sort(([, a], [, b]) => b - a)
         .forEach(([license, count]) => {
-          byLicenseTable.push([
-            license === 'unknown' ? yellow(license) : getLicenseColor(license),
-            count,
-            Number(((count / total) * 100).toFixed(2)),
-          ]);
+          byLicenseTable.push([getLicenseColor(license), count, Number(((count / total) * 100).toFixed(2))]);
         });
 
       console.log(`🏷️  Licenses by ${whiteBright('type')}`);
