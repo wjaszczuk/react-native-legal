@@ -1,4 +1,5 @@
 import type { DependencyType } from './DependencyType';
+import type { LicenseExpression } from './LicenseExpression';
 import type { ParentPackageInfo } from './ParentPackageInfo';
 import type { ScanPackageCallContext } from './ScanPackageCallContext';
 
@@ -18,8 +19,25 @@ export type License = {
   /** License file path */
   file?: string;
 
-  /** License type */
+  /**
+   * License type
+   *
+   * @deprecated Use {@link License.rawLicense}, {@link License.license} or {@link License.licenseIds} instead
+   */
   type?: string;
+
+  /**
+   * Raw License: the license declaration exactly as written in package.json;
+   * for the legacy `licenses: [{ type }]` array, the types joined with ` OR `;
+   * `null` if the package declares no license
+   */
+  rawLicense: string | null;
+
+  /** Parsed License Expression of {@link License.rawLicense} */
+  license: LicenseExpression;
+
+  /** Canonical SPDX License Identifiers found in {@link License.license}; empty for an Unknown License */
+  licenseIds: string[];
 
   /** Package repository URL */
   url?: string;
