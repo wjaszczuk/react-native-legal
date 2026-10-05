@@ -1763,10 +1763,12 @@ __metadata:
     "@babel/preset-env": "npm:^7.29.7"
     "@babel/preset-typescript": "npm:^7.29.7"
     "@types/jest": "npm:^29.5.5"
+    "@types/spdx-expression-parse": "npm:^4.0.0"
     babel-jest: "npm:^29.7.0"
     glob: "npm:^13.0.0"
     jest: "npm:^29.7.0"
     rimraf: "npm:^6.0.1"
+    spdx-expression-parse: "npm:^5.0.0"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -5939,6 +5941,13 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10/8ebba570b3a82333ca383d177e775b1c4d8113baaced6fe220b2cf96f1340ef4229c5435e93bd4e4fc11cc4418990151c91d0beda75676c8809c4232d4317f63
+  languageName: node
+  linkType: hard
+
+"@types/spdx-expression-parse@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "@types/spdx-expression-parse@npm:4.0.0"
+  checksum: 10/53d948c12e710860e28fc19be74209990e1806377aa924dec4e79ac7bed9a4e3fa8564d961d2ea269c158442fd243887bac7efc3aafaa69f6a8056790c03c394
   languageName: node
   linkType: hard
 
@@ -18007,6 +18016,30 @@ __metadata:
     cross-spawn: "npm:^7.0.5"
     signal-exit: "npm:^4.0.1"
   checksum: 10/47d88a7f1e5691e13e435eddc3d34123c2f7746e2853e91bfac5ea7c6e3bb4b1d1995223b25f7a8745871510d92f63ecd3c9fa02aa2896ac0c79fb618eb08bbe
+  languageName: node
+  linkType: hard
+
+"spdx-exceptions@npm:^2.1.0":
+  version: 2.5.0
+  resolution: "spdx-exceptions@npm:2.5.0"
+  checksum: 10/bb127d6e2532de65b912f7c99fc66097cdea7d64c10d3ec9b5e96524dbbd7d20e01cba818a6ddb2ae75e62bb0c63d5e277a7e555a85cbc8ab40044984fa4ae15
+  languageName: node
+  linkType: hard
+
+"spdx-expression-parse@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "spdx-expression-parse@npm:5.0.0"
+  dependencies:
+    spdx-exceptions: "npm:^2.1.0"
+    spdx-license-ids: "npm:^3.0.0"
+  checksum: 10/90813faf3e37303af96f1c13a9eb0e4667b84a546e58034eb789bae1700c54cc43b236c81ea912babc4010994f59a8d343eb0d7dff404a481bd45f32970a7246
+  languageName: node
+  linkType: hard
+
+"spdx-license-ids@npm:^3.0.0":
+  version: 3.0.24
+  resolution: "spdx-license-ids@npm:3.0.24"
+  checksum: 10/f8aaa5e869c9b4ad1bb4b3c1f1ef234bb10fda65e53879d918f3126710af1bd2df89cc4fe6400da90b3281317d909fd035e54e1c2bd4d1b10fb7ac1d30a420e7
   languageName: node
   linkType: hard
 
