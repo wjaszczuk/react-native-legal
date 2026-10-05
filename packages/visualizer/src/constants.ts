@@ -22,6 +22,9 @@ export const ROOT_PROJECT_ROOT_PACKAGE: Types.License = {
   version: '0.0.0',
   requiredVersion: '0.0.0',
   parentPackages: [],
+  rawLicense: null,
+  license: { kind: 'unknown', raw: null },
+  licenseIds: [],
 };
 
 export const ROOT_PROJECT_ROOT_PACKAGE_KEY = buildPackageKey(ROOT_PROJECT_ROOT_PACKAGE);

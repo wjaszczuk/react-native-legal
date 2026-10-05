@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { glob } from 'glob';
 
+import { collectLicenseIds, parseLicenseExpression } from '../licenses';
 import type {
   AboutLibrariesLibraryJsonPayload,
   AboutLibrariesLicenseJsonPayload,
@@ -101,13 +102,20 @@ function scanPackage(
           parentPackageInfo,
         ];
       } else {
+        const licenseField = PackageUtils.parseLicenseField(localPackageJson);
+        const rawLicense = licenseField ?? null;
+        const license = parseLicenseExpression(rawLicense);
+
         result[resolvedVersionPackageKey] = {
           name: packageName,
           author: PackageUtils.parseAuthorField(localPackageJson),
           content: licenseFiles?.[0] ? fs.readFileSync(licenseFiles[0], { encoding: 'utf-8' }) : undefined,
           file: licenseFiles?.[0] ? licenseFiles[0] : undefined,
           description: localPackageJson.description,
-          type: PackageUtils.parseLicenseField(localPackageJson),
+          type: licenseField,
+          rawLicense,
+          license,
+          licenseIds: collectLicenseIds(license),
           url: PackageUtils.parseRepositoryFieldToUrl(localPackageJson),
           version: localPackageJson.version,
           requiredVersion,
