@@ -13,3 +13,11 @@ export const validOrPolicies = ['most-restrictive', 'least-restrictive'] as cons
  * Never applies to AND, which always takes the most restrictive operand.
  */
 export type OrPolicy = (typeof validOrPolicies)[number];
+
+/**
+ * OR Policy used when none is given: a Dual License takes its most restrictive operand,
+ * as a conservative default for compliance checks.
+ *
+ * @see {@link OrPolicy}
+ */
+export const DEFAULT_OR_POLICY: OrPolicy = 'most-restrictive';
