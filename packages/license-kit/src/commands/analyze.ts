@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
-import { LicenseCategory, analyzeLicenses, categorizeLicense, scanDependencies } from '@callstack/licenses';
+import { LicenseCategory, analyzeLicenses, scanDependencies } from '@callstack/licenses';
 import type { Color } from 'colorette';
 import { bold, green, italic, red, underline, whiteBright, yellow, yellowBright } from 'colorette';
 import type { Command } from 'commander';
@@ -29,8 +29,7 @@ const categoryToColorMapping: Record<LicenseCategory, Color> = {
   [LicenseCategory.UNKNOWN]: yellow,
 };
 
-function getLicenseColor(license: string): string {
-  const licenseCategory = categorizeLicense(license);
+function getLicenseColor(license: string, licenseCategory: LicenseCategory): string {
   const licenseColorFn = categoryToColorMapping[licenseCategory];
 
   return licenseColorFn(license);
@@ -65,7 +64,7 @@ export default function analyzeCommandSetup(program: Command): Command {
 
     const licenses = scanDependencies(packageJsonPath, createScanOptionsFactory(options));
 
-    const { byCategory, byLicense, categorizedLicenses, total, description, categoriesPresence } =
+    const { byCategory, byLicense, categoryByLicense, categorizedLicenses, total, description, categoriesPresence } =
       analyzeLicenses(licenses);
 
     console.log();
@@ -141,7 +140,7 @@ export default function analyzeCommandSetup(program: Command): Command {
       console.log(
         table(
           Object.entries(licenses)
-            .filter(([_packageKey, license]) => categorizeLicense(license.type) === LicenseCategory.UNKNOWN)
+            .filter(([packageKey]) => categorizedLicenses[packageKey] === LicenseCategory.UNKNOWN)
             .map(([packageKey]) => [packageKey]),
           tableConfig,
         ),
@@ -171,7 +170,11 @@ export default function analyzeCommandSetup(program: Command): Command {
       byLicenseEntries
         .sort(([, a], [, b]) => b - a)
         .forEach(([license, count]) => {
-          byLicenseTable.push([getLicenseColor(license), count, Number(((count / total) * 100).toFixed(2))]);
+          byLicenseTable.push([
+            getLicenseColor(license, categoryByLicense[license]),
+            count,
+            Number(((count / total) * 100).toFixed(2)),
+          ]);
         });
 
       console.log(`🏷️  Licenses by ${whiteBright('type')}`);

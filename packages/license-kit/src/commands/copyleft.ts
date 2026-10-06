@@ -2,7 +2,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
-import { LicenseCategory, categorizeLicense, scanDependencies } from '@callstack/licenses';
+import {
+  LicenseCategory,
+  classifyLicenseExpression,
+  renderLicenseExpression,
+  scanDependencies,
+} from '@callstack/licenses';
 import type { Command } from 'commander';
 
 import { ERROR_EMOJI, NON_TAB_HELP_LISTING_SUBLIST_OFFSET, WARNING_EMOJI } from '../constants';
@@ -39,18 +44,15 @@ export default function copyleftCommandSetup(program: Command): Command {
     const weakCopyleftLicensesFound: string[] = [];
 
     for (const value of Object.values(licenses)) {
-      if (!value.type) {
-        continue;
-      }
-
-      const licenseCategory = categorizeLicense(value.type);
+      const licenseCategory = classifyLicenseExpression(value.license);
+      const entry = `- ${value.name}: ${renderLicenseExpression(value.license)} (${value.file || value.url})`;
 
       if (licenseCategory === LicenseCategory.STRONG_COPYLEFT) {
-        strongCopyleftLicensesFound.push(`- ${value.name}: ${value.type} (${value.file || value.url})`);
+        strongCopyleftLicensesFound.push(entry);
       }
 
       if (licenseCategory === LicenseCategory.WEAK_COPYLEFT) {
-        weakCopyleftLicensesFound.push(`- ${value.name}: ${value.type} (${value.file || value.url})`);
+        weakCopyleftLicensesFound.push(entry);
       }
     }
 
