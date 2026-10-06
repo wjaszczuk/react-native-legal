@@ -11,6 +11,7 @@ import {
   dependencies as sharedDependenciesObj,
   devDependencies as sharedDevDependenciesObj,
 } from '../../../packages/licenses-api/package.json';
+import { generateLicensePlistNPMOutput } from '../../../packages/licenses-api/src/node/common';
 import {
   dependencyMappingToCorrespondingKey,
   getDependencyCorrespondingKey,
@@ -58,7 +59,7 @@ const FIXTURE_ROOTS_DIR = path.resolve(__dirname, '..', '..', 'packages');
 
 async function runLicenseKit(args: string[]) {
   return new Promise<string>((resolve) => {
-    child_process.exec(`yarn license-kit ${args.join(' ')}`, (_, stdout) => {
+    child_process.exec(`yarn license-kit ${args.join(' ')}`, { maxBuffer: 1024 * 1024 * 100 }, (_, stdout) => {
       resolve(stdout);
     });
   });
@@ -120,6 +121,51 @@ describe('license-kit report', () => {
       rawLicense: 'SEE LICENSE IN LICENSE.md',
       license: { kind: 'unknown', raw: 'SEE LICENSE IN LICENSE.md' },
       licenseIds: [],
+    });
+  });
+
+  describe('with a Dual License shipping LICENSE-MIT and LICENSE-APACHE', () => {
+    const key = '@callstack/example-license-mit-or-apache-2.0@1.0.0';
+
+    it('when format is json, then licenseFiles has both files linked to their License Identifiers', async () => {
+      const json = await runReportCommandForJsonOutput();
+
+      expect(json[key].licenseFiles).toEqual([
+        expect.objectContaining({ file: 'LICENSE-APACHE', licenseId: 'Apache-2.0', content: expect.any(String) }),
+        expect.objectContaining({ file: 'LICENSE-MIT', licenseId: 'MIT', content: expect.any(String) }),
+      ]);
+    });
+
+    it('when format is text, then both license texts are printed', async () => {
+      const output = await runLicenseKit(['report', '--format', 'text']);
+
+      expect(output).toContain('MIT half');
+      expect(output).toContain('Apache-2.0 half');
+    });
+
+    it('when format is about-json, then the library has two licenses, each with its own text', async () => {
+      const output = JSON.parse(await runLicenseKit(['report', '--format', 'about-json']));
+      const entry = output.find(
+        (item: { normalizedPackageNameWithVersion: string }) =>
+          item.normalizedPackageNameWithVersion === key.replace('/', '_'),
+      );
+
+      expect(entry.libraryJsonPayload.licenses).toHaveLength(2);
+      expect(entry.licenseJsonPayloads.map((l: { hash: string }) => l.hash)).toEqual(entry.libraryJsonPayload.licenses);
+      expect(entry.licenseJsonPayloads).toEqual([
+        expect.objectContaining({ name: 'MIT', content: expect.stringContaining('MIT half') }),
+        expect.objectContaining({ name: 'Apache-2.0', content: expect.stringContaining('Apache-2.0 half') }),
+      ]);
+    });
+
+    it('when generating LicensePlist output, then the body has both texts under MIT and Apache-2.0 headings', async () => {
+      const json = await runReportCommandForJsonOutput();
+      const yaml = generateLicensePlistNPMOutput({ [key]: json[key] }, __dirname);
+
+      expect(yaml).toContain('=== MIT ===');
+      expect(yaml).toContain('MIT half');
+      expect(yaml).toContain('=== Apache-2.0 ===');
+      expect(yaml).toContain('Apache-2.0 half');
     });
   });
 

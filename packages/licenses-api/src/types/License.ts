@@ -1,5 +1,6 @@
 import type { DependencyType } from './DependencyType';
 import type { LicenseExpression } from './LicenseExpression';
+import type { LicenseFile } from './LicenseFile';
 import type { ParentPackageInfo } from './ParentPackageInfo';
 import type { ScanPackageCallContext } from './ScanPackageCallContext';
 
@@ -38,6 +39,9 @@ export type License = {
 
   /** Canonical SPDX License Identifiers found in {@link License.license}; empty for an Unknown License */
   licenseIds: string[];
+
+  /** Every license file found in the package root, each linked to its License Identifier where unambiguous */
+  licenseFiles: LicenseFile[];
 
   /** Package repository URL */
   url?: string;

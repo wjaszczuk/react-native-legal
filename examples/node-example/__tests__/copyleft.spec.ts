@@ -28,7 +28,7 @@ function parseCopyleftOutput(stderr: string) {
       section = 'strong';
     }
 
-    const match = line.match(/^- (.+?): (.+) \(.*\)$/);
+    const match = line.match(/^- (.+?): (.+?)(?: \([^()]*\/[^()]*\))?$/);
 
     if (match && section) {
       listed[match[1]] = { section, license: match[2] };
@@ -120,6 +120,13 @@ describe('license-kit copyleft', () => {
         }
       },
     );
+
+    it('when a package has neither a license file nor a repository URL, then its line has no "(undefined)"', async () => {
+      const { stderr } = await runCopyleftCommand([]);
+
+      expect(stderr).not.toContain('(undefined)');
+      expect(stderr).toMatch(/^- @callstack\/example-license-mit-or-gpl-3\.0: MIT OR GPL-3\.0-only$/m);
+    });
 
     it.each([
       // scenario, expected exit code, root project, extra arguments

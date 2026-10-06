@@ -4,5 +4,5 @@ import type { AboutLibrariesLicenseJsonPayload } from './AboutLibrariesLicenseJs
 export type AboutLibrariesLikePackageInfo = {
   normalizedPackageNameWithVersion: string;
   libraryJsonPayload: AboutLibrariesLibraryJsonPayload;
-  licenseJsonPayload: AboutLibrariesLicenseJsonPayload;
+  licenseJsonPayloads: AboutLibrariesLicenseJsonPayload[];
 };

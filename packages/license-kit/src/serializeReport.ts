@@ -17,7 +17,18 @@ export function serializeReport({
     if (packageInfo.file) {
       packageInfo.file = path.basename(packageInfo.file);
     }
+
+    for (const licenseFile of packageInfo.licenseFiles) {
+      licenseFile.file = path.basename(licenseFile.file);
+    }
   }
+
+  const licenseTexts = (packageInfo: Types.License) =>
+    packageInfo.licenseFiles.length > 1
+      ? packageInfo.licenseFiles
+          .map(({ file, content, licenseId }) => `${licenseId ?? file}:\n\n${content}`)
+          .join('\n\n')
+      : packageInfo.content;
 
   switch (format) {
     default:
@@ -29,41 +40,47 @@ export function serializeReport({
 
     case 'text':
       return Object.values(licenses)
-        .map(({ name: packageName, version, author, content, description, file, type, url }) =>
-          [
+        .map((packageInfo) => {
+          const { name: packageName, version, author, description, file, type, url } = packageInfo;
+
+          return [
             `${packageName} (${version})`,
             url ? `URL: ${url}` : '',
             author ? `Author: ${author}` : '',
-            content ?? '',
+            licenseTexts(packageInfo) ?? '',
             description ? `Description: ${description}` : '',
             file ? `File: ${file}` : '',
             type ? `Type: ${type}` : '',
             '',
             '---'.repeat(10),
             '',
-          ].join('\n'),
-        )
+          ].join('\n');
+        })
         .join('\n');
 
     case 'markdown':
       return md
         .joinBlocks(
           Object.values(licenses)
-            .flatMap(({ name: packageName, version, author, content, description, file, type, url }) => [
-              '\n',
-              md.heading(packageName, { level: 2 }),
-              '\n',
-              `Version: ${version}<br/>\n`,
-              url ? `URL: ${url}<br/>\n` : '',
-              author ? `Author: ${author}<br/>\n\n` : '',
-              content ?? '',
-              '\n',
-              description ? `Description: ${description}\n` : '',
-              file ? `\nFile: ${file}\n` : '',
-              type ? `Type: ${type}` : '',
-              '\n',
-              md.horizontalRule,
-            ])
+            .flatMap((packageInfo) => {
+              const { name: packageName, version, author, description, file, type, url } = packageInfo;
+
+              return [
+                '\n',
+                md.heading(packageName, { level: 2 }),
+                '\n',
+                `Version: ${version}<br/>\n`,
+                url ? `URL: ${url}<br/>\n` : '',
+                author ? `Author: ${author}<br/>\n\n` : '',
+                licenseTexts(packageInfo) ?? '',
+                '\n',
+                description ? `Description: ${description}\n` : '',
+                file ? `\nFile: ${file}\n` : '',
+                type ? `Type: ${type}` : '',
+                '\n',
+                md.horizontalRule,
+              ];
+            })
             .join('\n'),
         )
         .toString();
