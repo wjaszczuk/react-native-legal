@@ -51,6 +51,42 @@ describe('parseLicenseField', () => {
     expect(parseLicenseField(json)).toBe('Apache-2.0');
   });
 
+  it('should join the types of a legacy licenses array with OR', () => {
+    const json = { licenses: [{ type: 'MIT' }, { type: 'Apache-2.0' }] } as any;
+
+    expect(parseLicenseField(json)).toBe('MIT OR Apache-2.0');
+  });
+
+  it('should use the single type of a legacy licenses array', () => {
+    const json = { licenses: [{ type: 'MIT' }] } as any;
+
+    expect(parseLicenseField(json)).toBe('MIT');
+  });
+
+  it('should prefer the license field over the legacy licenses array', () => {
+    const json = { license: 'ISC', licenses: [{ type: 'MIT' }] } as any;
+
+    expect(parseLicenseField(json)).toBe('ISC');
+  });
+
+  it('should skip legacy licenses entries without a type', () => {
+    const json = { licenses: [{}, { type: 'MIT' }] } as any;
+
+    expect(parseLicenseField(json)).toBe('MIT');
+  });
+
+  it('should skip legacy licenses entries with an empty type', () => {
+    const json = { licenses: [{ type: ' ' }, { type: 'MIT' }] } as any;
+
+    expect(parseLicenseField(json)).toBe('MIT');
+  });
+
+  it('should return undefined when the legacy licenses array has no types', () => {
+    const json = { licenses: [] } as any;
+
+    expect(parseLicenseField(json)).toBeUndefined();
+  });
+
   it('should return undefined when license is an object without type field', () => {
     const json = { license: {} as any };
 

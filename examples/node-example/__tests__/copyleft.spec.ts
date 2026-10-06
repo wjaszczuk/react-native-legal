@@ -39,6 +39,16 @@ function parseCopyleftOutput(stderr: string) {
 }
 
 describe('license-kit copyleft', () => {
+  it.each(['most-restrictive', 'least-restrictive'])(
+    'when a package uses the legacy licenses array of permissive licenses, then it exits 0 with --or-policy %s',
+    async (orPolicy) => {
+      const root = path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-legacy-licenses-array');
+      const { exitCode } = await runCopyleftCommand(['--root', root, '--or-policy', orPolicy]);
+
+      expect(exitCode).toBe(0);
+    },
+  );
+
   it('should report error for strong copyleft licenses', async () => {
     const output = await new Promise<string>((resolve) => {
       child_process.exec('yarn workspace license-kit-node-example copyleft', (_, __, stderr) => {

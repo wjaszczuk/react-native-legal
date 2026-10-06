@@ -112,6 +112,21 @@ describe('parseLicenseExpression: leaf semantics', () => {
     expect(parseLicenseExpression(rawLicense)).toEqual({ kind: 'unknown', raw: rawLicense });
   });
 
+  it('when an exception is written without WITH, then it is unknown', () => {
+    expect(parseLicenseExpression('mit or classpath-exception-2.0')).toEqual({
+      kind: 'unknown',
+      raw: 'mit or classpath-exception-2.0',
+    });
+  });
+
+  it('when raw license is a lowercase deprecated identifier, then it is upgraded', () => {
+    expect(parseLicenseExpression('gpl-2.0')).toEqual(license('GPL-2.0-only', { declaredId: 'GPL-2.0' }));
+  });
+
+  it('when raw license is unlicensed in any case, then it is unknown and never Unlicense', () => {
+    expect(parseLicenseExpression('unlicensed')).toEqual({ kind: 'unknown', raw: 'unlicensed' });
+  });
+
   it('when raw license is UNLICENSED, then it is never confused with Unlicense', () => {
     expect(collectLicenseIds(parseLicenseExpression('UNLICENSED'))).not.toContain('Unlicense');
     expect(parseLicenseExpression('UNLICENSED').kind).toBe('unknown');
@@ -234,5 +249,60 @@ describe('renderLicenseExpression: leaf semantics', () => {
     license('LicenseRef-Custom'),
   ])('when leaf %o is rendered and parsed back, then it is the same tree', (leaf) => {
     expect(parseLicenseExpression(renderLicenseExpression(leaf))).toEqual(leaf);
+  });
+});
+
+describe('parseLicenseExpression: input normalization', () => {
+  it.each([
+    ['mit', license('MIT')],
+    ['Mit', license('MIT')],
+    [
+      'mit or apache-2.0',
+      {
+        kind: 'or',
+        left: license('MIT'),
+        right: license('Apache-2.0'),
+      },
+    ],
+    ['lgpl-3.0+', license('LGPL-3.0-or-later', { declaredId: 'LGPL-3.0', plus: true })],
+    ['gpl-2.0-only with classpath-exception-2.0', license('GPL-2.0-only', { exception: 'Classpath-exception-2.0' })],
+    ['(mit)', license('MIT')],
+  ] satisfies [string, LicenseExpression][])(
+    'when raw license is %s, then it is matched case-insensitively',
+    (rawLicense, expected) => {
+      expect(parseLicenseExpression(rawLicense)).toEqual(expected);
+    },
+  );
+
+  it.each([
+    ['Apache 2.0', 'Apache-2.0'],
+    ['Apache-2', 'Apache-2.0'],
+    ['Apache License 2.0', 'Apache-2.0'],
+    ['MIT/X11', 'MIT'],
+    ['MIT License', 'MIT'],
+    ['  mit license ', 'MIT'],
+  ])('when raw license is the alias %s, then it normalizes to %s', (rawLicense, expectedId) => {
+    expect(parseLicenseExpression(rawLicense)).toMatchObject({ kind: 'license', id: expectedId });
+  });
+
+  it.each(['BSD', 'GPL', 'LGPL', 'bsd', 'MIT OR GPL', 'MIT OR Foo-1.0'])(
+    'when raw license is the ambiguous or unrecognised %s, then it is unknown',
+    (rawLicense) => {
+      const result = parseLicenseExpression(rawLicense);
+
+      expect(result).toEqual({ kind: 'unknown', raw: rawLicense });
+    },
+  );
+
+  it('when raw license is UNLICENSED, then it is unknown and never Unlicense', () => {
+    expect(parseLicenseExpression('UNLICENSED')).toEqual({ kind: 'unknown', raw: 'UNLICENSED' });
+  });
+
+  it('when raw license is MIT OR GPL, then it never collapses to a single GPL identifier', () => {
+    expect(collectLicenseIds(parseLicenseExpression('MIT OR GPL'))).toEqual([]);
+  });
+
+  it('when a LicenseRef has a lowercase prefix, then only the known part is case-insensitive', () => {
+    expect(parseLicenseExpression('licenseref-Custom')).toMatchObject({ kind: 'license', id: 'LicenseRef-Custom' });
   });
 });

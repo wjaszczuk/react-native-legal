@@ -86,6 +86,26 @@ describe('license-kit report', () => {
     });
   });
 
+  it('when a package uses the legacy licenses array, then the Raw License is its types joined with OR', async () => {
+    const json = JSON.parse(
+      await runLicenseKit([
+        'report',
+        '--root',
+        path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-legacy-licenses-array'),
+      ]),
+    );
+
+    expect(json['@callstack/example-license-legacy-licenses-array@1.0.0']).toMatchObject({
+      rawLicense: 'MIT OR Apache-2.0',
+      license: {
+        kind: 'or',
+        left: { kind: 'license', id: 'MIT' },
+        right: { kind: 'license', id: 'Apache-2.0' },
+      },
+      licenseIds: ['MIT', 'Apache-2.0'],
+    });
+  });
+
   it('when licenses are Unknown, then report keeps the Raw License and has no License Identifiers', async () => {
     const json = JSON.parse(
       await runLicenseKit(['report', '--root', path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-unknown-licenses')]),

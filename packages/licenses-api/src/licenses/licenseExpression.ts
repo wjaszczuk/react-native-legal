@@ -1,3 +1,4 @@
+import spdxExceptionIds from 'spdx-exceptions/index.json';
 import parse from 'spdx-expression-parse';
 import deprecatedSpdxLicenseIds from 'spdx-license-ids/deprecated.json';
 import spdxLicenseIds from 'spdx-license-ids/index.json';
@@ -6,6 +7,24 @@ import type { LicenseExpression } from '../types';
 
 const SPDX_LICENSE_IDS = new Set(spdxLicenseIds);
 const DEPRECATED_SPDX_LICENSE_IDS = new Set(deprecatedSpdxLicenseIds);
+
+const CANONICAL_ID_BY_LOWERCASE = new Map(
+  [...spdxLicenseIds, ...deprecatedSpdxLicenseIds, ...spdxExceptionIds].map((id) => [id.toLowerCase(), id]),
+);
+
+const SPDX_OPERATORS = new Set(['and', 'or', 'with']);
+
+/**
+ * Unambiguous spellings that are not valid SPDX License Expressions, keyed by the lowercase, trimmed value.
+ * Ambiguous values (`BSD`, `GPL`, `LGPL`) are deliberately absent: guessing a variant or version changes the legal meaning.
+ */
+const LICENSE_ALIASES = new Map([
+  ['apache 2.0', 'Apache-2.0'],
+  ['apache-2', 'Apache-2.0'],
+  ['apache license 2.0', 'Apache-2.0'],
+  ['mit/x11', 'MIT'],
+  ['mit license', 'MIT'],
+]);
 
 /**
  * Parses a Raw License into a License Expression, following the SPDX License Expression syntax.
@@ -23,13 +42,44 @@ export function parseLicenseExpression(rawLicense: string | null): LicenseExpres
     return { kind: 'unknown', raw: rawLicense };
   }
 
-  try {
-    const spdxParsedResult = parse(rawLicense);
+  const parsed =
+    tryParse(rawLicense) ??
+    tryParse(LICENSE_ALIASES.get(rawLicense.trim().toLowerCase())) ??
+    tryParse(fixIdentifierCase(rawLicense));
 
-    return mapSpdxParsedValueToLicenseExpression(spdxParsedResult);
-  } catch {
-    return { kind: 'unknown', raw: rawLicense };
+  return parsed ?? { kind: 'unknown', raw: rawLicense };
+}
+
+function tryParse(rawLicense: string | undefined): LicenseExpression | undefined {
+  if (rawLicense === undefined) {
+    return undefined;
   }
+
+  try {
+    return mapSpdxParsedValueToLicenseExpression(parse(rawLicense));
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Rewrites every identifier and operator to its canonical spelling (SPDX Annex B.2: identifiers are case-insensitive).
+ * Tokens that match no known identifier are left as written, so the re-parse rejects them.
+ */
+function fixIdentifierCase(rawLicense: string): string {
+  return rawLicense.replace(/[^\s()]+/g, (token) => {
+    if (SPDX_OPERATORS.has(token.toLowerCase())) {
+      return token.toUpperCase();
+    }
+
+    const plus = token.endsWith('+') ? '+' : '';
+    const id = plus ? token.slice(0, -1) : token;
+    const canonicalId =
+      CANONICAL_ID_BY_LOWERCASE.get(id.toLowerCase()) ??
+      (/^licenseref-/i.test(id) ? `LicenseRef-${id.slice('LicenseRef-'.length)}` : id);
+
+    return `${canonicalId}${plus}`;
+  });
 }
 
 function mapSpdxParsedValueToLicenseExpression(spdxParsedValue: parse.Info): LicenseExpression {

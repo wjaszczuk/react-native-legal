@@ -65,6 +65,7 @@
   },
   "dependencies": {
     "glob": "^13.0.0",
+    "spdx-exceptions": "^2.1.0",
     "spdx-expression-parse": "^5.0.0",
     "spdx-license-ids": "^3.0.24"
   },

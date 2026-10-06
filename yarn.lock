@@ -1723,6 +1723,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@callstack/example-copyleft-root-legacy-licenses-array@workspace:examples/packages/example-copyleft-root-legacy-licenses-array":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-copyleft-root-legacy-licenses-array@workspace:examples/packages/example-copyleft-root-legacy-licenses-array"
+  dependencies:
+    "@callstack/example-license-legacy-licenses-array": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@callstack/example-copyleft-root-license-ref@workspace:examples/packages/example-copyleft-root-license-ref":
   version: 0.0.0-use.local
   resolution: "@callstack/example-copyleft-root-license-ref@workspace:examples/packages/example-copyleft-root-license-ref"
@@ -1786,6 +1794,12 @@ __metadata:
 "@callstack/example-license-gpl-3.0-and-mit-or-apache-2.0@workspace:*, @callstack/example-license-gpl-3.0-and-mit-or-apache-2.0@workspace:examples/packages/example-license-gpl-3.0-and-mit-or-apache-2.0":
   version: 0.0.0-use.local
   resolution: "@callstack/example-license-gpl-3.0-and-mit-or-apache-2.0@workspace:examples/packages/example-license-gpl-3.0-and-mit-or-apache-2.0"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-license-legacy-licenses-array@workspace:*, @callstack/example-license-legacy-licenses-array@workspace:examples/packages/example-license-legacy-licenses-array":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-legacy-licenses-array@workspace:examples/packages/example-license-legacy-licenses-array"
   languageName: unknown
   linkType: soft
 
@@ -1899,6 +1913,7 @@ __metadata:
     glob: "npm:^13.0.0"
     jest: "npm:^29.7.0"
     rimraf: "npm:^6.0.1"
+    spdx-exceptions: "npm:^2.1.0"
     spdx-expression-parse: "npm:^5.0.0"
     spdx-license-ids: "npm:^3.0.24"
     typescript: "npm:^5.8.3"

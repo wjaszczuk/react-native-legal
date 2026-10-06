@@ -79,13 +79,25 @@ export function parseAuthorField(json: { author: string | { name: string } }) {
   }
 }
 
-export function parseLicenseField(json: { license: string | { type: string } }) {
-  if (typeof json.license === 'object' && typeof json.license.type === 'string') {
+/**
+ * Reads the Raw License from package.json: the `license` string, the legacy `license: { type }` object,
+ * or the legacy `licenses: [{ type }, …]` array, whose types are joined with ` OR `.
+ */
+export function parseLicenseField(json: { license?: string | { type: string }; licenses?: Array<{ type?: string }> }) {
+  if (typeof json.license === 'object' && typeof json.license?.type === 'string') {
     return json.license.type;
   }
 
   if (typeof json.license === 'string') {
     return json.license;
+  }
+
+  if (Array.isArray(json.licenses)) {
+    const types = json.licenses.flatMap((entry) =>
+      typeof entry?.type === 'string' && entry.type.trim() !== '' ? [entry.type] : [],
+    );
+
+    return types.length > 0 ? types.join(' OR ') : undefined;
   }
 }
 
