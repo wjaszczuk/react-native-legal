@@ -1,0 +1,7 @@
+{
+  "name": "@callstack/example-license-gpl-2.0-with-classpath-exception",
+  "version": "1.0.0",
+  "description": "Test package with a strong copyleft license and a License Exception, for the license-kit integration tests",
+  "license": "GPL-2.0-only WITH Classpath-exception-2.0",
+  "packageManager": "yarn@3.6.1"
+}

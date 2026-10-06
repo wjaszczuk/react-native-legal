@@ -159,6 +159,16 @@ describe('license-kit copyleft', () => {
         'copyleft-unavoidable',
         ['--or-policy', 'least-restrictive'],
       ],
+      ['strong copyleft with a License Exception fails', 1, 'with-exception', ['--or-policy', 'least-restrictive']],
+      ['strong copyleft next to a LicenseRef-* license fails under the default OR Policy', 1, 'license-ref', []],
+      [
+        'strong copyleft next to a LicenseRef-* license fails under least-restrictive',
+        1,
+        'license-ref',
+        ['--or-policy', 'least-restrictive'],
+      ],
+      ['Unknown Licenses alone do not fail', 0, 'unknown-licenses', []],
+      ['Unknown Licenses alone do not fail with --error-on-weak', 0, 'unknown-licenses', ['--error-on-weak']],
     ] as [string, number, string, string[]][])('%s: exits with %d', async (_scenario, expectedExitCode, root, args) => {
       const { exitCode } = await runCopyleftCommand([
         '--root',
@@ -167,6 +177,20 @@ describe('license-kit copyleft', () => {
       ]);
 
       expect(exitCode).toBe(expectedExitCode);
+    });
+
+    it('when a package has a License Exception, then the copyleft output shows the exception', async () => {
+      const { stderr } = await runCopyleftCommand([
+        '--root',
+        path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-with-exception'),
+      ]);
+
+      expect(parseCopyleftOutput(stderr)).toEqual({
+        '@callstack/example-license-gpl-2.0-with-classpath-exception': {
+          section: 'strong',
+          license: 'GPL-2.0-only WITH Classpath-exception-2.0',
+        },
+      });
     });
 
     it('when OR Policy is not a supported value, then it prints the supported values and exits with 1', async () => {

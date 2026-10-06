@@ -10,6 +10,15 @@ export const STRONG_COPYLEFT_LICENSES = new Set([
   'GPL-2.0+',
   'GPL-2.0-only',
   'GPL-2.0-or-later',
+  // start: deprecated identifiers with a built-in License Exception, which have no -only form to be upgraded to
+  'GPL-2.0-with-autoconf-exception',
+  'GPL-2.0-with-bison-exception',
+  'GPL-2.0-with-classpath-exception',
+  'GPL-2.0-with-font-exception',
+  'GPL-2.0-with-GCC-exception',
+  'GPL-3.0-with-autoconf-exception',
+  'GPL-3.0-with-GCC-exception',
+  // end: deprecated identifiers with a built-in License Exception
   'GPL-3.0',
   'GPL-3.0+',
   'GPL-3.0-only',

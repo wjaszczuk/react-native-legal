@@ -65,7 +65,8 @@
   },
   "dependencies": {
     "glob": "^13.0.0",
-    "spdx-expression-parse": "^5.0.0"
+    "spdx-expression-parse": "^5.0.0",
+    "spdx-license-ids": "^3.0.24"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",

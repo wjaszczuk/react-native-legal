@@ -63,7 +63,7 @@ export function classifyLicenseExpression(
 ): LicenseCategory {
   switch (expression.kind) {
     case 'license':
-      return categorizeLicense(expression.id);
+      return isLicenseRef(expression.id) ? LicenseCategory.UNKNOWN : categorizeLicense(expression.id);
     case 'unknown':
       return LicenseCategory.UNKNOWN;
     case 'and':
@@ -77,6 +77,56 @@ export function classifyLicenseExpression(
         classifyLicenseExpression(expression.right, orPolicy),
       );
   }
+}
+
+/**
+ * Decides which copyleft cannot be avoided for a License Expression under an OR Policy.
+ *
+ * Unknown operands are ignored, so a custom license next to a copyleft one cannot hide the copyleft:
+ * - AND requires the most restrictive known operand;
+ * - OR with an Unknown operand requires what the other operand requires;
+ * - OR with two known operands follows the OR Policy;
+ * - an expression with no known operand requires no copyleft.
+ *
+ * @param expression the License Expression to check
+ * @param orPolicy the OR Policy applied to every OR in the expression; defaults to {@link DEFAULT_OR_POLICY}
+ * @returns permissive, weak copyleft or strong copyleft; never unknown
+ * @example
+ * classifyUnavoidableCopyleft(parseLicenseExpression('GPL-3.0-only AND LicenseRef-Custom'));
+ * // LicenseCategory.STRONG_COPYLEFT
+ */
+export function classifyUnavoidableCopyleft(
+  expression: LicenseExpression,
+  orPolicy: OrPolicy = DEFAULT_OR_POLICY,
+): LicenseCategory {
+  return findKnownCopyleft(expression, orPolicy) ?? LicenseCategory.PERMISSIVE;
+}
+
+/** Like {@link classifyUnavoidableCopyleft}, but `null` when no operand has a known category */
+function findKnownCopyleft(expression: LicenseExpression, orPolicy: OrPolicy): LicenseCategory | null {
+  if (expression.kind === 'unknown') {
+    return null;
+  }
+
+  if (expression.kind === 'license') {
+    const category = classifyLicenseExpression(expression);
+
+    return category === LicenseCategory.UNKNOWN ? null : category;
+  }
+
+  const left = findKnownCopyleft(expression.left, orPolicy);
+  const right = findKnownCopyleft(expression.right, orPolicy);
+
+  if (left === null || right === null) {
+    return left ?? right;
+  }
+
+  return expression.kind === 'and' ? takeMoreRestrictive(left, right) : OR_COMPARISON_STRATEGY[orPolicy](left, right);
+}
+
+/** A custom license reference, optionally qualified by a document: `LicenseRef-X` or `DocumentRef-Y:LicenseRef-X` */
+function isLicenseRef(id: string): boolean {
+  return /^(DocumentRef-[^:]+:)?LicenseRef-/.test(id);
 }
 
 function takeMoreRestrictive(a: LicenseCategory, b: LicenseCategory): LicenseCategory {

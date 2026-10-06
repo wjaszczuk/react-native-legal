@@ -151,7 +151,7 @@ export default function analyzeCommandSetup(program: Command): Command {
         table(
           Object.entries(licenses)
             .filter(([packageKey]) => categorizedLicenses[packageKey] === LicenseCategory.UNKNOWN)
-            .map(([packageKey]) => [packageKey]),
+            .map(([packageKey, license]) => [packageKey, license.rawLicense ?? 'no license declared']),
           tableConfig,
         ),
       );

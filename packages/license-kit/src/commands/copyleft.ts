@@ -4,7 +4,7 @@ import process from 'node:process';
 
 import {
   LicenseCategory,
-  classifyLicenseExpression,
+  classifyUnavoidableCopyleft,
   renderLicenseExpression,
   scanDependencies,
 } from '@callstack/licenses';
@@ -52,7 +52,7 @@ export default function copyleftCommandSetup(program: Command): Command {
     const weakCopyleftLicensesFound: string[] = [];
 
     for (const value of Object.values(licenses)) {
-      const licenseCategory = classifyLicenseExpression(value.license, options.orPolicy);
+      const licenseCategory = classifyUnavoidableCopyleft(value.license, options.orPolicy);
       const entry = `- ${value.name}: ${renderLicenseExpression(value.license)} (${value.file || value.url})`;
 
       if (licenseCategory === LicenseCategory.STRONG_COPYLEFT) {

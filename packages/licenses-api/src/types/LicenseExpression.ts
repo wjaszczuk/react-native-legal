@@ -7,8 +7,13 @@
  * @see https://spdx.github.io/spdx-spec/v3.0.1/annexes/spdx-license-expressions/
  */
 export type LicenseExpression =
-  /** A single license, identified by its SPDX License Identifier (e.g. `MIT`) */
-  | { kind: 'license'; id: string }
+  /**
+   * A single license, identified by its SPDX License Identifier (e.g. `MIT`).
+   * - `id` is canonical: deprecated identifiers are upgraded and `+` is absorbed into `-or-later` when such an identifier exists
+   * - `declaredId` and `plus` record what was written
+   * - `exception` is the License Exception attached with `WITH`
+   */
+  | { kind: 'license'; id: string; declaredId: string; plus?: boolean; exception?: string }
   /** Dual License: the licensee may comply with either operand */
   | { kind: 'or'; left: LicenseExpression; right: LicenseExpression }
   /** Both operands apply and must be complied with simultaneously */

@@ -1,6 +1,11 @@
 import parse from 'spdx-expression-parse';
+import deprecatedSpdxLicenseIds from 'spdx-license-ids/deprecated.json';
+import spdxLicenseIds from 'spdx-license-ids/index.json';
 
 import type { LicenseExpression } from '../types';
+
+const SPDX_LICENSE_IDS = new Set(spdxLicenseIds);
+const DEPRECATED_SPDX_LICENSE_IDS = new Set(deprecatedSpdxLicenseIds);
 
 /**
  * Parses a Raw License into a License Expression, following the SPDX License Expression syntax.
@@ -11,7 +16,7 @@ import type { LicenseExpression } from '../types';
  * @returns the parsed License Expression
  * @example
  * parseLicenseExpression('MIT OR Apache-2.0');
- * // { kind: 'or', left: { kind: 'license', id: 'MIT' }, right: { kind: 'license', id: 'Apache-2.0' } }
+ * // { kind: 'or', left: { kind: 'license', id: 'MIT', declaredId: 'MIT' }, right: { kind: 'license', id: 'Apache-2.0', declaredId: 'Apache-2.0' } }
  */
 export function parseLicenseExpression(rawLicense: string | null): LicenseExpression {
   if (rawLicense === null) {
@@ -36,8 +41,32 @@ function mapSpdxParsedValueToLicenseExpression(spdxParsedValue: parse.Info): Lic
     };
   }
 
-  // TODO: implement exception and plus keys
-  return { kind: 'license', id: spdxParsedValue.license };
+  const { license: declaredId, plus, exception } = spdxParsedValue;
+
+  return {
+    kind: 'license',
+    id: normalizeLicenseId(declaredId, plus === true),
+    declaredId,
+    ...(plus && { plus: true }),
+    ...(exception && { exception }),
+  };
+}
+
+/**
+ * Upgrades a declared License Identifier to its canonical form:
+ * - with `+`, to the `-or-later` identifier when one exists;
+ * - a deprecated identifier, to its `-only` identifier when one exists.
+ */
+function normalizeLicenseId(declaredId: string, plus: boolean): string {
+  if (plus && SPDX_LICENSE_IDS.has(`${declaredId}-or-later`)) {
+    return `${declaredId}-or-later`;
+  }
+
+  if (!plus && DEPRECATED_SPDX_LICENSE_IDS.has(declaredId) && SPDX_LICENSE_IDS.has(`${declaredId}-only`)) {
+    return `${declaredId}-only`;
+  }
+
+  return declaredId;
 }
 
 /**
@@ -87,8 +116,16 @@ export function renderLicenseExpression(expression: LicenseExpression): string {
     }
 
     case 'license':
-      return expression.id;
+      return renderLicenseLeaf(expression);
   }
+}
+
+function renderLicenseLeaf(leaf: Extract<LicenseExpression, { kind: 'license' }>): string {
+  // `+` is already absorbed into an `-or-later` identifier
+  const plus = leaf.plus && !leaf.id.endsWith('-or-later') ? '+' : '';
+  const exception = leaf.exception ? ` WITH ${leaf.exception}` : '';
+
+  return `${leaf.id}${plus}${exception}`;
 }
 
 function renderOperand(

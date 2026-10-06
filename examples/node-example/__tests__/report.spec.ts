@@ -1,5 +1,6 @@
 import child_process from 'node:child_process';
 import { platform } from 'node:os';
+import path from 'node:path';
 
 import {
   dependencies as licenseKitDependenciesObj,
@@ -53,7 +54,67 @@ async function runReportCommandForJsonOutput(args: string[] = []) {
   return JSON.parse(output);
 }
 
+const FIXTURE_ROOTS_DIR = path.resolve(__dirname, '..', '..', 'packages');
+
+async function runLicenseKit(args: string[]) {
+  return new Promise<string>((resolve) => {
+    child_process.exec(`yarn license-kit ${args.join(' ')}`, (_, stdout) => {
+      resolve(stdout);
+    });
+  });
+}
+
 describe('license-kit report', () => {
+  describe('with a License Exception', () => {
+    const root = path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-with-exception');
+    const packageName = '@callstack/example-license-gpl-2.0-with-classpath-exception';
+
+    it('when format is json, then the leaf keeps the exception', async () => {
+      const json = JSON.parse(await runLicenseKit(['report', '--root', root]));
+
+      expect(json[`${packageName}@1.0.0`]).toMatchObject({
+        rawLicense: 'GPL-2.0-only WITH Classpath-exception-2.0',
+        license: { kind: 'license', id: 'GPL-2.0-only', exception: 'Classpath-exception-2.0' },
+        licenseIds: ['GPL-2.0-only'],
+      });
+    });
+
+    it.each(['text', 'markdown'])('when format is %s, then it prints the exception', async (format) => {
+      const output = await runLicenseKit(['report', '--root', root, '--format', format]);
+
+      expect(output).toMatch('GPL-2.0-only WITH Classpath-exception-2.0');
+    });
+  });
+
+  it('when licenses are Unknown, then report keeps the Raw License and has no License Identifiers', async () => {
+    const json = JSON.parse(
+      await runLicenseKit(['report', '--root', path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-unknown-licenses')]),
+    );
+
+    expect(json['@callstack/example-license-unlicensed@1.0.0']).toMatchObject({
+      rawLicense: 'UNLICENSED',
+      license: { kind: 'unknown', raw: 'UNLICENSED' },
+      licenseIds: [],
+    });
+    expect(json['@callstack/example-license-see-license-in@1.0.0']).toMatchObject({
+      rawLicense: 'SEE LICENSE IN LICENSE.md',
+      license: { kind: 'unknown', raw: 'SEE LICENSE IN LICENSE.md' },
+      licenseIds: [],
+    });
+  });
+
+  it('analyze --list-unknown lists Unknown Licenses with their Raw License', async () => {
+    const output = await runLicenseKit([
+      'analyze',
+      '--list-unknown',
+      '--root',
+      path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-unknown-licenses'),
+    ]);
+
+    expect(output).toMatch(/example-license-unlicensed@1\.0\.0\s+│ UNLICENSED/);
+    expect(output).toMatch(/example-license-see-license-in@1\.0\.0\s+│ SEE LICENSE IN LICENSE\.md/);
+  });
+
   it('including transitive deps, with dev deps with default settings', async () => {
     const json = await runReportCommandForJsonOutput();
 
