@@ -11,7 +11,12 @@ import open from 'open';
 import { Signale } from 'signale';
 
 import { type LicensesMappingResult, generateLicensesMapping } from '../logic/generateLicensesMapping';
-import { curryCommonScanOptions, validateCommonScanOptions } from '../utils/commandUtils';
+import {
+  curryCommonScanOptions,
+  curryOrPolicyOption,
+  validateCommonScanOptions,
+  validateOrPolicyOption,
+} from '../utils/commandUtils';
 import { getLockfilePath, getPackageLockChecksum } from '../utils/projectUtils';
 
 const isDev = !!process.env.NODE_ENV && process.env.NODE_ENV !== 'production';
@@ -22,36 +27,39 @@ const apiSignale = new Signale({ scope: 'API' });
 const reportSignale = new Signale({ scope: 'report' });
 
 export default function visualizeCommandSetup(program: Command): Command {
-  return curryCommonScanOptions(
-    program
-      .command('visualize')
-      .description(
-        'Launches a local server providing a web license graph visualizer & analyzer app: summarizes the dependency graph state, shows an interactive graph of licenses with possibility to select a subgraph, provides browser built-in AI-turbocharged summary of the dependency graph.',
-      )
-      .option(
-        '--port [port]',
-        'Port on which to launch the app',
-        (value) => {
-          const parsedValue = parseInt(value, 10);
+  return curryOrPolicyOption(
+    curryCommonScanOptions(
+      program
+        .command('visualize')
+        .description(
+          'Launches a local server providing a web license graph visualizer & analyzer app: summarizes the dependency graph state, shows an interactive graph of licenses with possibility to select a subgraph, provides browser built-in AI-turbocharged summary of the dependency graph.',
+        )
+        .option(
+          '--port [port]',
+          'Port on which to launch the app',
+          (value) => {
+            const parsedValue = parseInt(value, 10);
 
-          if (isNaN(parsedValue)) {
-            throw new InvalidArgumentError('Not a number.');
-          }
+            if (isNaN(parsedValue)) {
+              throw new InvalidArgumentError('Not a number.');
+            }
 
-          return parsedValue;
-        },
-        8094,
-      )
-      .option('--h, --host [host]', 'Host on which to launch the app', 'localhost')
-      .option(
-        '--a, --auto-open [open]',
-        'Host on which to launch the app',
-        (value) => value === 'true' || value === '1',
-        true,
-      )
-      .option('--root [path]', 'Path to the root of your project', '.'),
+            return parsedValue;
+          },
+          8094,
+        )
+        .option('--h, --host [host]', 'Host on which to launch the app', 'localhost')
+        .option(
+          '--a, --auto-open [open]',
+          'Host on which to launch the app',
+          (value) => value === 'true' || value === '1',
+          true,
+        )
+        .option('--root [path]', 'Path to the root of your project', '.'),
+    ),
   ).action(async (options) => {
     validateCommonScanOptions(options);
+    validateOrPolicyOption(options);
 
     const expressApp = express();
 

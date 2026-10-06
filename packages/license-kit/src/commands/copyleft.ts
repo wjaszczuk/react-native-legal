@@ -12,23 +12,31 @@ import type { Command } from 'commander';
 
 import { ERROR_EMOJI, NON_TAB_HELP_LISTING_SUBLIST_OFFSET, WARNING_EMOJI } from '../constants';
 import { createScanOptionsFactory } from '../scanOptionsUtils';
-import { curryCommonScanOptions, validateCommonScanOptions } from '../utils/commandUtils';
+import {
+  curryCommonScanOptions,
+  curryOrPolicyOption,
+  validateCommonScanOptions,
+  validateOrPolicyOption,
+} from '../utils/commandUtils';
 
 export default function copyleftCommandSetup(program: Command): Command {
-  return curryCommonScanOptions(
-    program
-      .command('copyleft')
-      .description(
-        'Check for copyleft licenses. Exits with error if strong copyleft licenses are found.' +
-          '\nExit codes:' +
-          `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 0 - no copyleft licenses found` +
-          `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 1 - strong copyleft licenses found` +
-          `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 2 - weak copyleft licenses found (if --error-on-weak is set)`,
-      )
-      .option('--error-on-weak', 'Exit with error if weak copyleft licenses are found', false)
-      .option('--root [path]', 'Path to the root of your project', '.'),
+  return curryOrPolicyOption(
+    curryCommonScanOptions(
+      program
+        .command('copyleft')
+        .description(
+          'Check for copyleft licenses. Exits with error if strong copyleft licenses are found.' +
+            '\nExit codes:' +
+            `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 0 - no copyleft licenses found` +
+            `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 1 - strong copyleft licenses found` +
+            `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 2 - weak copyleft licenses found (if --error-on-weak is set)`,
+        )
+        .option('--error-on-weak', 'Exit with error if weak copyleft licenses are found', false)
+        .option('--root [path]', 'Path to the root of your project', '.'),
+    ),
   ).action((options) => {
     validateCommonScanOptions(options);
+    validateOrPolicyOption(options);
 
     const repoRootPath = path.resolve(process.cwd(), options.root);
     const packageJsonPath = path.join(repoRootPath, 'package.json');
@@ -44,7 +52,7 @@ export default function copyleftCommandSetup(program: Command): Command {
     const weakCopyleftLicensesFound: string[] = [];
 
     for (const value of Object.values(licenses)) {
-      const licenseCategory = classifyLicenseExpression(value.license);
+      const licenseCategory = classifyLicenseExpression(value.license, options.orPolicy);
       const entry = `- ${value.name}: ${renderLicenseExpression(value.license)} (${value.file || value.url})`;
 
       if (licenseCategory === LicenseCategory.STRONG_COPYLEFT) {

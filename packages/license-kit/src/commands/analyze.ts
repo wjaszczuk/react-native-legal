@@ -9,7 +9,12 @@ import type { Command } from 'commander';
 import { type TableUserConfig, getBorderCharacters, table } from 'table';
 
 import { createScanOptionsFactory } from '../scanOptionsUtils';
-import { curryCommonScanOptions } from '../utils/commandUtils';
+import {
+  curryCommonScanOptions,
+  curryOrPolicyOption,
+  validateCommonScanOptions,
+  validateOrPolicyOption,
+} from '../utils/commandUtils';
 
 const tableConfig: TableUserConfig = {
   border: getBorderCharacters('norc'),
@@ -36,16 +41,21 @@ function getLicenseColor(license: string, licenseCategory: LicenseCategory): str
 }
 
 export default function analyzeCommandSetup(program: Command): Command {
-  return curryCommonScanOptions(
-    program
-      .command('analyze')
-      .description(
-        'Scan licenses & report the insights: summary, top license types, optionally unknowns & breakdown of licenses by different features.',
-      )
-      .option('--root [path]', 'Path to the root of your project', '.')
-      .option('--list-unknown', 'List unknown licenses', false)
-      .option('--show-breakdown', 'Show breakdown of licenses by category and type', false),
+  return curryOrPolicyOption(
+    curryCommonScanOptions(
+      program
+        .command('analyze')
+        .description(
+          'Scan licenses & report the insights: summary, top license types, optionally unknowns & breakdown of licenses by different features.',
+        )
+        .option('--root [path]', 'Path to the root of your project', '.')
+        .option('--list-unknown', 'List unknown licenses', false)
+        .option('--show-breakdown', 'Show breakdown of licenses by category and type', false),
+    ),
   ).action((options) => {
+    validateCommonScanOptions(options);
+    validateOrPolicyOption(options);
+
     const repoRootPath = path.resolve(process.cwd(), options.root);
     const packageJsonPath = path.join(repoRootPath, 'package.json');
 
@@ -65,7 +75,7 @@ export default function analyzeCommandSetup(program: Command): Command {
     const licenses = scanDependencies(packageJsonPath, createScanOptionsFactory(options));
 
     const { byCategory, byLicense, categoryByLicense, categorizedLicenses, total, description, categoriesPresence } =
-      analyzeLicenses(licenses);
+      analyzeLicenses(licenses, options.orPolicy);
 
     console.log();
 
