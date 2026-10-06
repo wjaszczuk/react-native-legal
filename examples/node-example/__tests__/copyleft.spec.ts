@@ -1,4 +1,42 @@
 import child_process from 'node:child_process';
+import path from 'node:path';
+
+type CopyleftSection = 'strong' | 'weak';
+
+const FIXTURE_ROOTS_DIR = path.resolve(__dirname, '..', '..', 'packages');
+
+async function runCopyleftCommand(args: string[] = []) {
+  return new Promise<{ exitCode: number; stderr: string }>((resolve) => {
+    child_process.exec(`yarn license-kit copyleft ${args.join(' ')}`, (error, _, stderr) => {
+      resolve({ exitCode: error?.code ?? 0, stderr });
+    });
+  });
+}
+
+/**
+ * Maps each listed package to the section of the copyleft output it is listed in, together with its rendered license.
+ */
+function parseCopyleftOutput(stderr: string) {
+  const listed: Record<string, { section: CopyleftSection; license: string }> = {};
+
+  let section: CopyleftSection | undefined;
+
+  for (const line of stderr.split('\n')) {
+    if (line.includes('Weak copyleft licenses found')) {
+      section = 'weak';
+    } else if (line.includes('Copyleft licenses found')) {
+      section = 'strong';
+    }
+
+    const match = line.match(/^- (.+?): (.+) \(.*\)$/);
+
+    if (match && section) {
+      listed[match[1]] = { section, license: match[2] };
+    }
+  }
+
+  return listed;
+}
 
 describe('license-kit copyleft', () => {
   it('should report error for strong copyleft licenses', async () => {
@@ -22,5 +60,120 @@ describe('license-kit copyleft', () => {
     expect(output).toMatch('dhtmlx-gantt: GPL-2.0');
     expect(output).toMatch('Weak copyleft licenses found in the following dependencies:');
     expect(output).toMatch('mariadb: LGPL-2.1-or-later');
+  });
+
+  describe('with License Expressions', () => {
+    // package -> [rendered license, section under most-restrictive, section under least-restrictive]
+    const EXPECTED_SECTIONS: [string, string, CopyleftSection | undefined, CopyleftSection | undefined][] = [
+      ['@callstack/example-license-mit-or-apache-2.0', 'MIT OR Apache-2.0', undefined, undefined],
+      ['@callstack/example-license-mit-and-lgpl-2.1', 'MIT AND LGPL-2.1-only', 'weak', 'weak'],
+      ['@callstack/example-license-mit-or-gpl-3.0', 'MIT OR GPL-3.0-only', 'strong', undefined],
+      ['@callstack/example-license-mit-or-apache-2.0-and-isc', 'MIT OR Apache-2.0 AND ISC', undefined, undefined],
+      [
+        '@callstack/example-license-mit-or-gpl-3.0-in-and-with-lgpl-2.1',
+        '(MIT OR GPL-3.0-only) AND LGPL-2.1-only',
+        'strong',
+        'weak',
+      ],
+      ['@callstack/example-license-lgpl-2.1-or-gpl-3.0', 'LGPL-2.1-only OR GPL-3.0-only', 'strong', 'weak'],
+      [
+        '@callstack/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0',
+        '(Apache-2.0 OR LGPL-3.0-only) AND (MIT OR GPL-2.0-only)',
+        'strong',
+        undefined,
+      ],
+      [
+        '@callstack/example-license-gpl-3.0-and-mit-or-apache-2.0',
+        'GPL-3.0-only AND (MIT OR Apache-2.0)',
+        'strong',
+        'strong',
+      ],
+    ];
+
+    it.each([
+      ['most-restrictive', 2],
+      ['least-restrictive', 3],
+    ] as const)(
+      'when OR Policy is %s, then each License Expression package is listed as strong or weak copyleft, or not listed when permissive',
+      async (orPolicy, sectionIndex) => {
+        const { stderr } = await runCopyleftCommand(['--or-policy', orPolicy]);
+        const listed = parseCopyleftOutput(stderr);
+
+        for (const expected of EXPECTED_SECTIONS) {
+          const [packageName, license] = expected;
+          const section = expected[sectionIndex];
+
+          expect({ packageName, listed: listed[packageName] }).toEqual({
+            packageName,
+            listed: section ? { section, license } : undefined,
+          });
+        }
+      },
+    );
+
+    it.each([
+      // scenario, expected exit code, root project, extra arguments
+      ['Dual License of permissive licenses passes under the default OR Policy', 0, 'no-copyleft', []],
+      [
+        'Dual License of permissive licenses passes under least-restrictive',
+        0,
+        'no-copyleft',
+        ['--or-policy', 'least-restrictive'],
+      ],
+      ['permissive packages pass with --error-on-weak', 0, 'no-copyleft', ['--error-on-weak']],
+      ['weak copyleft combined with AND passes without --error-on-weak', 0, 'weak-copyleft-only', []],
+      ['weak copyleft combined with AND fails with --error-on-weak', 2, 'weak-copyleft-only', ['--error-on-weak']],
+      [
+        'weak copyleft combined with AND fails with --error-on-weak under least-restrictive',
+        2,
+        'weak-copyleft-only',
+        ['--or-policy', 'least-restrictive', '--error-on-weak'],
+      ],
+      [
+        'Dual License with a strong copyleft operand fails under the default OR Policy',
+        1,
+        'copyleft-avoidable-by-or-policy',
+        [],
+      ],
+      [
+        'Dual License with a strong copyleft operand fails under most-restrictive',
+        1,
+        'copyleft-avoidable-by-or-policy',
+        ['--or-policy', 'most-restrictive'],
+      ],
+      [
+        'Dual License with a strong copyleft operand passes under least-restrictive',
+        0,
+        'copyleft-avoidable-by-or-policy',
+        ['--or-policy', 'least-restrictive'],
+      ],
+      [
+        'strong copyleft combined with AND fails under most-restrictive',
+        1,
+        'copyleft-unavoidable',
+        ['--or-policy', 'most-restrictive'],
+      ],
+      [
+        'strong copyleft combined with AND fails under least-restrictive, since AND ignores the OR Policy',
+        1,
+        'copyleft-unavoidable',
+        ['--or-policy', 'least-restrictive'],
+      ],
+    ] as [string, number, string, string[]][])('%s: exits with %d', async (_scenario, expectedExitCode, root, args) => {
+      const { exitCode } = await runCopyleftCommand([
+        '--root',
+        path.join(FIXTURE_ROOTS_DIR, `example-copyleft-root-${root}`),
+        ...args,
+      ]);
+
+      expect(exitCode).toBe(expectedExitCode);
+    });
+
+    it('when OR Policy is not a supported value, then it prints the supported values and exits with 1', async () => {
+      const { exitCode, stderr } = await runCopyleftCommand(['--or-policy', 'invalid']);
+
+      expect(exitCode).toBe(1);
+      expect(stderr).toMatch('Invalid OR policy: invalid. Supported policies: most-restrictive, least-restrictive');
+    });
   });
 });

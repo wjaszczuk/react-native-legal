@@ -1,0 +1,7 @@
+{
+  "name": "@callstack/example-license-mit-or-apache-2.0",
+  "version": "1.0.0",
+  "description": "Test package with a Dual License of two permissive licenses, for the license-kit integration tests",
+  "license": "MIT OR Apache-2.0",
+  "packageManager": "yarn@3.6.1"
+}

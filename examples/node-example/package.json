@@ -10,6 +10,14 @@
     "test": "jest"
   },
   "dependencies": {
+    "@callstack/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0": "workspace:*",
+    "@callstack/example-license-gpl-3.0-and-mit-or-apache-2.0": "workspace:*",
+    "@callstack/example-license-lgpl-2.1-or-gpl-3.0": "workspace:*",
+    "@callstack/example-license-mit-and-lgpl-2.1": "workspace:*",
+    "@callstack/example-license-mit-or-apache-2.0": "workspace:*",
+    "@callstack/example-license-mit-or-apache-2.0-and-isc": "workspace:*",
+    "@callstack/example-license-mit-or-gpl-3.0": "workspace:*",
+    "@callstack/example-license-mit-or-gpl-3.0-in-and-with-lgpl-2.1": "workspace:*",
     "@callstack/example-private-package": "workspace:*",
     "dhtmlx-gantt": "9.0.11",
     "is-even": "1.0.0",

@@ -1706,6 +1706,88 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@callstack/example-copyleft-root-copyleft-avoidable-by-or-policy@workspace:examples/packages/example-copyleft-root-copyleft-avoidable-by-or-policy":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-copyleft-root-copyleft-avoidable-by-or-policy@workspace:examples/packages/example-copyleft-root-copyleft-avoidable-by-or-policy"
+  dependencies:
+    "@callstack/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0": "workspace:*"
+    "@callstack/example-license-mit-or-gpl-3.0": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-copyleft-root-copyleft-unavoidable@workspace:examples/packages/example-copyleft-root-copyleft-unavoidable":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-copyleft-root-copyleft-unavoidable@workspace:examples/packages/example-copyleft-root-copyleft-unavoidable"
+  dependencies:
+    "@callstack/example-license-gpl-3.0-and-mit-or-apache-2.0": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-copyleft-root-no-copyleft@workspace:examples/packages/example-copyleft-root-no-copyleft":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-copyleft-root-no-copyleft@workspace:examples/packages/example-copyleft-root-no-copyleft"
+  dependencies:
+    "@callstack/example-license-mit-or-apache-2.0": "workspace:*"
+    "@callstack/example-license-mit-or-apache-2.0-and-isc": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-copyleft-root-weak-copyleft-only@workspace:examples/packages/example-copyleft-root-weak-copyleft-only":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-copyleft-root-weak-copyleft-only@workspace:examples/packages/example-copyleft-root-weak-copyleft-only"
+  dependencies:
+    "@callstack/example-license-mit-and-lgpl-2.1": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0@workspace:*, @callstack/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0@workspace:examples/packages/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0@workspace:examples/packages/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-license-gpl-3.0-and-mit-or-apache-2.0@workspace:*, @callstack/example-license-gpl-3.0-and-mit-or-apache-2.0@workspace:examples/packages/example-license-gpl-3.0-and-mit-or-apache-2.0":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-gpl-3.0-and-mit-or-apache-2.0@workspace:examples/packages/example-license-gpl-3.0-and-mit-or-apache-2.0"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-license-lgpl-2.1-or-gpl-3.0@workspace:*, @callstack/example-license-lgpl-2.1-or-gpl-3.0@workspace:examples/packages/example-license-lgpl-2.1-or-gpl-3.0":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-lgpl-2.1-or-gpl-3.0@workspace:examples/packages/example-license-lgpl-2.1-or-gpl-3.0"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-license-mit-and-lgpl-2.1@workspace:*, @callstack/example-license-mit-and-lgpl-2.1@workspace:examples/packages/example-license-mit-and-lgpl-2.1":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-mit-and-lgpl-2.1@workspace:examples/packages/example-license-mit-and-lgpl-2.1"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-license-mit-or-apache-2.0-and-isc@workspace:*, @callstack/example-license-mit-or-apache-2.0-and-isc@workspace:examples/packages/example-license-mit-or-apache-2.0-and-isc":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-mit-or-apache-2.0-and-isc@workspace:examples/packages/example-license-mit-or-apache-2.0-and-isc"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-license-mit-or-apache-2.0@workspace:*, @callstack/example-license-mit-or-apache-2.0@workspace:examples/packages/example-license-mit-or-apache-2.0":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-mit-or-apache-2.0@workspace:examples/packages/example-license-mit-or-apache-2.0"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-license-mit-or-gpl-3.0-in-and-with-lgpl-2.1@workspace:*, @callstack/example-license-mit-or-gpl-3.0-in-and-with-lgpl-2.1@workspace:examples/packages/example-license-mit-or-gpl-3.0-in-and-with-lgpl-2.1":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-mit-or-gpl-3.0-in-and-with-lgpl-2.1@workspace:examples/packages/example-license-mit-or-gpl-3.0-in-and-with-lgpl-2.1"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-license-mit-or-gpl-3.0@workspace:*, @callstack/example-license-mit-or-gpl-3.0@workspace:examples/packages/example-license-mit-or-gpl-3.0":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-mit-or-gpl-3.0@workspace:examples/packages/example-license-mit-or-gpl-3.0"
+  languageName: unknown
+  linkType: soft
+
 "@callstack/example-private-package@workspace:*, @callstack/example-private-package@workspace:examples/packages/example-private-package":
   version: 0.0.0-use.local
   resolution: "@callstack/example-private-package@workspace:examples/packages/example-private-package"
@@ -13397,6 +13479,14 @@ __metadata:
     "@babel/core": "npm:^7.29.7"
     "@babel/preset-env": "npm:^7.29.7"
     "@babel/preset-typescript": "npm:^7.29.7"
+    "@callstack/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0": "workspace:*"
+    "@callstack/example-license-gpl-3.0-and-mit-or-apache-2.0": "workspace:*"
+    "@callstack/example-license-lgpl-2.1-or-gpl-3.0": "workspace:*"
+    "@callstack/example-license-mit-and-lgpl-2.1": "workspace:*"
+    "@callstack/example-license-mit-or-apache-2.0": "workspace:*"
+    "@callstack/example-license-mit-or-apache-2.0-and-isc": "workspace:*"
+    "@callstack/example-license-mit-or-gpl-3.0": "workspace:*"
+    "@callstack/example-license-mit-or-gpl-3.0-in-and-with-lgpl-2.1": "workspace:*"
     "@callstack/example-private-package": "workspace:*"
     "@types/jest": "npm:^29.5.5"
     babel-jest: "npm:^29.7.0"

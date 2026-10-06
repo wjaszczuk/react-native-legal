@@ -93,6 +93,43 @@ describe('license-kit report', () => {
     );
   });
 
+  it('includes rawLicense, the parsed License Expression and licenseIds for single licenses and License Expressions', async () => {
+    const json = await runReportCommandForJsonOutput();
+
+    expect(json[getDependencyCorrespondingKey(dependenciesObj, 'is-even')!]).toMatchObject({
+      rawLicense: 'MIT',
+      license: { kind: 'license', id: 'MIT' },
+      licenseIds: ['MIT'],
+    });
+    expect(json['@callstack/example-license-mit-or-apache-2.0@1.0.0']).toMatchObject({
+      rawLicense: 'MIT OR Apache-2.0',
+      license: { kind: 'or', left: { kind: 'license', id: 'MIT' }, right: { kind: 'license', id: 'Apache-2.0' } },
+      licenseIds: ['MIT', 'Apache-2.0'],
+    });
+    expect(json['@callstack/example-license-mit-or-apache-2.0-and-isc@1.0.0']).toMatchObject({
+      rawLicense: 'MIT OR Apache-2.0 AND ISC',
+      license: {
+        kind: 'or',
+        left: { kind: 'license', id: 'MIT' },
+        right: { kind: 'and', left: { kind: 'license', id: 'Apache-2.0' }, right: { kind: 'license', id: 'ISC' } },
+      },
+      licenseIds: ['MIT', 'Apache-2.0', 'ISC'],
+    });
+    expect(json['@callstack/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0@1.0.0']).toMatchObject({
+      rawLicense: '(Apache-2.0 OR LGPL-3.0-only) AND (MIT OR GPL-2.0-only)',
+      license: {
+        kind: 'and',
+        left: {
+          kind: 'or',
+          left: { kind: 'license', id: 'Apache-2.0' },
+          right: { kind: 'license', id: 'LGPL-3.0-only' },
+        },
+        right: { kind: 'or', left: { kind: 'license', id: 'MIT' }, right: { kind: 'license', id: 'GPL-2.0-only' } },
+      },
+      licenseIds: ['Apache-2.0', 'LGPL-3.0-only', 'MIT', 'GPL-2.0-only'],
+    });
+  });
+
   it("does not include private packages' licenses", async () => {
     const json = await runReportCommandForJsonOutput();
 
@@ -127,6 +164,14 @@ describe('license-kit report', () => {
     const resultKeys = Object.keys(json);
 
     expect(stripVersionSuffixes(resultKeys.toSorted())).toEqual([
+      '@callstack/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0',
+      '@callstack/example-license-gpl-3.0-and-mit-or-apache-2.0',
+      '@callstack/example-license-lgpl-2.1-or-gpl-3.0',
+      '@callstack/example-license-mit-and-lgpl-2.1',
+      '@callstack/example-license-mit-or-apache-2.0-and-isc',
+      '@callstack/example-license-mit-or-apache-2.0',
+      '@callstack/example-license-mit-or-gpl-3.0-in-and-with-lgpl-2.1',
+      '@callstack/example-license-mit-or-gpl-3.0',
       '@types/geojson',
       '@types/node',
       'chartjs-plugin-dragdata',
