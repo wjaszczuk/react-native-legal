@@ -33,6 +33,7 @@ import {
   Types,
   generateAboutLibrariesNPMOutput,
   generateLicensePlistNPMOutput,
+  renderLicenseExpression,
   scanDependencies,
 } from '@callstack/licenses';
 import * as md from 'ts-markdown-builder';
@@ -58,17 +59,16 @@ const licensePlistReport = generateLicensePlistNPMOutput(licenses, iosProjectPat
 const markdownString = md
   .joinBlocks(
     Object.entries(licenses)
-      .flatMap(([packageKey, { name: packageName, version, author, content, description, file, type, url }]) => [
+      .flatMap(([packageKey, { name: packageName, version, author, description, license, licenseFiles, url }]) => [
         md.heading(packageName, { level: 2 }),
         '\n',
         `Version: ${version}<br/>\n`,
         url ? `URL: ${url}<br/>\n` : '',
         author ? `Author: ${author}<br/>\n\n` : '',
-        content ?? '',
+        licenseFiles.map(({ licenseId, file, content }) => `${licenseId ?? file}:\n\n${content}`).join('\n\n'),
         '\n',
         description ? `Description: ${description}\n` : '',
-        file ? `\nFile: ${file}\n` : '',
-        type ? `Type: ${type}` : '',
+        `License: ${renderLicenseExpression(license)}`,
         '\n',
         md.horizontalRule,
       ])

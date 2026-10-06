@@ -94,8 +94,7 @@ function scanPackage(
           parentPackageInfo,
         ];
       } else {
-        const licenseField = PackageUtils.parseLicenseField(localPackageJson);
-        const rawLicense = licenseField ?? null;
+        const rawLicense = PackageUtils.parseLicenseField(localPackageJson) ?? null;
         const license = parseLicenseExpression(rawLicense);
         const licenseIds = collectLicenseIds(license);
         const licenseFiles = PackageUtils.readLicenseFiles(path.dirname(localPackageJsonPath), licenseIds);
@@ -103,10 +102,7 @@ function scanPackage(
         result[resolvedVersionPackageKey] = {
           name: packageName,
           author: PackageUtils.parseAuthorField(localPackageJson),
-          content: licenseFiles[0]?.content,
-          file: licenseFiles[0]?.file,
           description: localPackageJson.description,
-          type: licenseField,
           rawLicense,
           license,
           licenseIds,

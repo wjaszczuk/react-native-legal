@@ -29,6 +29,7 @@ To get started, install the package using your preferred package manager:
 import {
   generateAboutLibrariesNPMOutput,
   generateLicensePlistNPMOutput,
+  renderLicenseExpression,
   scanDependencies,
   Types,
 } from '@callstack/licenses';
@@ -55,17 +56,16 @@ const licensePlistReport = generateLicensePlistNPMOutput(licenses, iosProjectPat
 const markdownString = md
   .joinBlocks(
     Object.entries(licenses)
-      .flatMap(([packageKey, { name: packageName, version, author, content, description, file, type, url }]) => [
+      .flatMap(([packageKey, { name: packageName, version, author, description, license, licenseFiles, url }]) => [
         md.heading(packageName, { level: 2 }),
         '\n',
         `Version: ${version}<br/>\n`,
         url ? `URL: ${url}<br/>\n` : '',
         author ? `Author: ${author}<br/>\n\n` : '',
-        content ?? '',
+        licenseFiles.map(({ licenseId, file, content }) => `${licenseId ?? file}:\n\n${content}`).join('\n\n'),
         '\n',
         description ? `Description: ${description}\n` : '',
-        file ? `\nFile: ${file}\n` : '',
-        type ? `Type: ${type}` : '',
+        `License: ${renderLicenseExpression(license)}`,
         '\n',
         md.horizontalRule,
       ])
@@ -88,13 +88,27 @@ The API documentation is published under: https://callstackincubator.github.io/r
 
 ## Additional details
 
-### License Types
+### Scanned entries
 
-The tool recognizes various license types:
+Every scanned entry exposes the license declaration in a structured form:
+
+- `rawLicense` - the license declaration exactly as written in `package.json` (`null` if there is none),
+- `license` - the parsed [SPDX License Expression](https://spdx.github.io/spdx-spec/v3.0.1/annexes/spdx-license-expressions/) (a tree of `license`, `or`, `and` and `unknown` nodes),
+- `licenseIds` - the flattened list of canonical SPDX License Identifiers (empty when the license is unparseable),
+- `licenseFiles` - every license file found in the package root, as `{ file, content, licenseId? }`.
+
+Upgrading from a previous version? See the [migration guide](./migration-guide).
+
+### License Categories
+
+Use `parseLicenseExpression`, `renderLicenseExpression` and `classifyLicenseExpression` to work with expressions. The category of an expression follows these rules:
 
 - **Strong Copyleft**: Licenses that require derivative works to be released under the same license (e.g., GPL-3.0)
 - **Weak Copyleft**: Licenses that require derivative works to be released under the same license, but with some exceptions (e.g., LGPL-3.0)
 - **Permissive**: Licenses that allow for more flexible use (e.g., MIT, Apache-2.0)
+- **Unknown**: Missing, unrecognised or ambiguous declarations (e.g., `UNLICENSED`, `SEE LICENSE IN …`, `BSD`, `LicenseRef-*`)
+
+`AND` always takes the most restrictive operand, `WITH` and `+` take the category of the base license, and `OR` follows the OR Policy passed to `classifyLicenseExpression`: `'most-restrictive'` (the default, exported as `DEFAULT_OR_POLICY`) or `'least-restrictive'` (the CLI equivalent of `--or-policy`). `classifyUnavoidableCopyleft` tells whether copyleft cannot be avoided under a given OR Policy.
 
 ### Monorepo Support
 

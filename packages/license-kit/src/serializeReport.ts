@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { type Types, generateAboutLibrariesNPMOutput } from '@callstack/licenses';
+import { type Types, generateAboutLibrariesNPMOutput, renderLicenseExpression } from '@callstack/licenses';
 import * as md from 'ts-markdown-builder';
 
 import type { Format } from './types/Format';
@@ -14,10 +14,6 @@ export function serializeReport({
 }): string {
   // convert absolute paths to license files to just filenames (no point in placing those in the file)
   for (const packageInfo of Object.values(licenses)) {
-    if (packageInfo.file) {
-      packageInfo.file = path.basename(packageInfo.file);
-    }
-
     for (const licenseFile of packageInfo.licenseFiles) {
       licenseFile.file = path.basename(licenseFile.file);
     }
@@ -28,7 +24,7 @@ export function serializeReport({
       ? packageInfo.licenseFiles
           .map(({ file, content, licenseId }) => `${licenseId ?? file}:\n\n${content}`)
           .join('\n\n')
-      : packageInfo.content;
+      : packageInfo.licenseFiles[0]?.content;
 
   switch (format) {
     default:
@@ -41,7 +37,7 @@ export function serializeReport({
     case 'text':
       return Object.values(licenses)
         .map((packageInfo) => {
-          const { name: packageName, version, author, description, file, type, url } = packageInfo;
+          const { name: packageName, version, author, description, license, licenseFiles, url } = packageInfo;
 
           return [
             `${packageName} (${version})`,
@@ -49,8 +45,8 @@ export function serializeReport({
             author ? `Author: ${author}` : '',
             licenseTexts(packageInfo) ?? '',
             description ? `Description: ${description}` : '',
-            file ? `File: ${file}` : '',
-            type ? `Type: ${type}` : '',
+            licenseFiles[0] ? `File: ${licenseFiles[0].file}` : '',
+            `Type: ${renderLicenseExpression(license)}`,
             '',
             '---'.repeat(10),
             '',
@@ -63,7 +59,7 @@ export function serializeReport({
         .joinBlocks(
           Object.values(licenses)
             .flatMap((packageInfo) => {
-              const { name: packageName, version, author, description, file, type, url } = packageInfo;
+              const { name: packageName, version, author, description, license, licenseFiles, url } = packageInfo;
 
               return [
                 '\n',
@@ -75,8 +71,8 @@ export function serializeReport({
                 licenseTexts(packageInfo) ?? '',
                 '\n',
                 description ? `Description: ${description}\n` : '',
-                file ? `\nFile: ${file}\n` : '',
-                type ? `Type: ${type}` : '',
+                licenseFiles[0] ? `\nFile: ${licenseFiles[0].file}\n` : '',
+                `Type: ${renderLicenseExpression(license)}`,
                 '\n',
                 md.horizontalRule,
               ];

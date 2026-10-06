@@ -188,13 +188,23 @@ describe('license-kit report', () => {
     const mariadbPackageKey = getDependencyCorrespondingKey(dependenciesObj, 'mariadb');
     const zustandPackageKey = getDependencyCorrespondingKey(dependenciesObj, 'zustand');
 
-    expect(json[getDependencyCorrespondingKey(dependenciesObj, 'dhtmlx-gantt')].type).toMatch('GPL-2.0');
-    expect(json[isEvenPackageKey].content).toMatch('MIT License');
-    expect(json[isEvenPackageKey].type).toMatch('MIT');
-    expect(json[mariadbPackageKey].content).toMatch('GNU LESSER GENERAL PUBLIC LICENSE');
-    expect(json[mariadbPackageKey].type).toMatch('LGPL-2.1-or-later');
-    expect(json[zustandPackageKey].content).toMatch('MIT License');
-    expect(json[zustandPackageKey].type).toMatch('MIT');
+    expect(json[getDependencyCorrespondingKey(dependenciesObj, 'dhtmlx-gantt')].licenseIds).toContain('GPL-2.0-only');
+    expect(json[isEvenPackageKey].licenseFiles[0].content).toMatch('MIT License');
+    expect(json[isEvenPackageKey].licenseIds).toEqual(['MIT']);
+    expect(json[mariadbPackageKey].licenseFiles[0].content).toMatch('GNU LESSER GENERAL PUBLIC LICENSE');
+    expect(json[mariadbPackageKey].licenseIds).toEqual(['LGPL-2.1-or-later']);
+    expect(json[zustandPackageKey].licenseFiles[0].content).toMatch('MIT License');
+    expect(json[zustandPackageKey].licenseIds).toEqual(['MIT']);
+
+    for (const entry of Object.values(json)) {
+      expect(entry).toHaveProperty('rawLicense');
+      expect(entry).toHaveProperty('license');
+      expect(entry).toHaveProperty('licenseIds');
+      expect(entry).toHaveProperty('licenseFiles');
+      expect(entry).not.toHaveProperty('type');
+      expect(entry).not.toHaveProperty('content');
+      expect(entry).not.toHaveProperty('file');
+    }
   });
 
   it('without transitive deps and without dev deps', async () => {

@@ -11,21 +11,8 @@ export type License = {
   /** Package author */
   author?: string;
 
-  /** Package license contents */
-  content?: string;
-
   /** Package description */
   description?: string;
-
-  /** License file path */
-  file?: string;
-
-  /**
-   * License type
-   *
-   * @deprecated Use {@link License.rawLicense}, {@link License.license} or {@link License.licenseIds} instead
-   */
-  type?: string;
 
   /**
    * Raw License: the license declaration exactly as written in package.json;
