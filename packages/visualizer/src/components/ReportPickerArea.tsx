@@ -210,7 +210,7 @@ export default function ReportPickerArea({ children }: ReportPickerAreaProps) {
                   const response = await fetch(`${window.location.origin}/api/report`);
                   const data = await response.json();
 
-                  setReport(data.report, data.name);
+                  setReport(data.report, data.projectName, data.orPolicy);
                 } catch (error) {
                   console.error('Error auto-loading report:', error);
 

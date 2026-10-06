@@ -120,6 +120,7 @@ export default function visualizeCommandSetup(program: Command): Command {
       res.json({
         report: licenses,
         projectName,
+        orPolicy: options.orPolicy,
       });
     });
 
@@ -159,6 +160,7 @@ export default function visualizeCommandSetup(program: Command): Command {
                 type: 'UPDATE',
                 report: lastScanResult!.licenses,
                 projectName: lastScanResult!.projectName,
+                orPolicy: options.orPolicy,
               })}\n\n`,
             );
           });

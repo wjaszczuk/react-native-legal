@@ -1,4 +1,4 @@
-import { categorizeLicense } from '@callstack/licenses';
+import { classifyLicenseExpression } from '@callstack/licenses';
 import { ChangeHistoryTwoTone, Inventory2TwoTone } from '@mui/icons-material';
 import { Chip, Divider, Stack, Tooltip, Typography } from '@mui/material';
 import { usePrevious } from '@uidotdev/usehooks';
@@ -8,20 +8,24 @@ import { tss } from 'tss-react/mui';
 import { useVisualizerStore } from '@/store/visualizerStore';
 import { getLicenseWarningColor } from '@/utils/colorUtils';
 import { getCategoryChipColor, getCategoryIcon } from '@/utils/licenseCategoryUtils';
+import { renderDisplayLicense } from '@/utils/licenseDisplayUtils';
 
 import ExternalLink from './ExternalLink';
 import MarkdownBlock from './MarkdownBlock';
 
 export default function HoveredDependencyInfo() {
   const { classes } = useStyles();
-  const { hoveredLicense } = useVisualizerStore();
+  const { hoveredLicense, orPolicy } = useVisualizerStore();
 
   // below var is used to still display the last hovered license in the sidebar when it becomes null in the store
   const prevHoveredLicenseValue = usePrevious(hoveredLicense);
 
   const displayLicense = hoveredLicense ?? prevHoveredLicenseValue;
 
-  const hoveredDisplayCategoryLicense = useMemo(() => categorizeLicense(displayLicense?.type), [displayLicense]);
+  const hoveredDisplayCategoryLicense = useMemo(
+    () => classifyLicenseExpression(displayLicense?.license ?? { kind: 'unknown', raw: null }, orPolicy),
+    [displayLicense, orPolicy],
+  );
 
   return (
     <Stack direction="column" sx={{ alignItems: 'center', gap: 2, justifyContent: 'center', padding: 2 }}>
@@ -43,14 +47,14 @@ export default function HoveredDependencyInfo() {
           <Chip icon={<Inventory2TwoTone />} label={displayLicense?.dependencyType ?? 'N/A'} />
         </Tooltip>
 
-        <Tooltip arrow title="License type & category (package.json 'type' field)">
+        <Tooltip arrow title="License Expression & category">
           <Chip
             sx={{
               // FIXME: for whatever reason, the custom background color is not applied to non-outlined chips, hence the below workaround
               backgroundColor: getLicenseWarningColor(hoveredDisplayCategoryLicense)?.main,
             }}
             icon={getCategoryIcon(hoveredDisplayCategoryLicense)}
-            label={`${displayLicense?.type ?? '---'} (${hoveredDisplayCategoryLicense})`}
+            label={`${displayLicense ? renderDisplayLicense(displayLicense) : '---'} (${hoveredDisplayCategoryLicense})`}
             color={getCategoryChipColor(hoveredDisplayCategoryLicense)}
           />
         </Tooltip>
@@ -73,9 +77,14 @@ export default function HoveredDependencyInfo() {
 
       <Typography variant="body1" sx={{ paddingLeft: 2, paddingRight: 2, width: '100%' }} component="div">
         <MarkdownBlock>
-          {`${displayLicense?.file ? `*Source: \`${displayLicense.file}\`*` : ''}\n\n${
-            displayLicense?.content ?? '(No license text available)'
-          }`}
+          {displayLicense?.licenseFiles.length
+            ? displayLicense.licenseFiles
+                .map(
+                  ({ file, content, licenseId }) =>
+                    `*Source: \`${file}\`${licenseId ? ` (${licenseId})` : ''}*\n\n${content}`,
+                )
+                .join('\n\n---\n\n')
+            : '(No license text available)'}
         </MarkdownBlock>
       </Typography>
     </Stack>

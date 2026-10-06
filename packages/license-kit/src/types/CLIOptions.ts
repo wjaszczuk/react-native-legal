@@ -21,4 +21,4 @@ export type CLIOrPolicyOptions = {
   orPolicy: OrPolicy;
 };
 
-export type CLIVisualizeOptions = CLIReportOptions & CLIScanOptions;
+export type CLIVisualizeOptions = CLIReportOptions & CLIScanOptions & CLIOrPolicyOptions;

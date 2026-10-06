@@ -18,7 +18,7 @@ export default function EventSourceHandler() {
 
       eventSource.onmessage = (event) => {
         try {
-          const { type, report, projectName } = JSON.parse(event.data);
+          const { type, report, projectName, orPolicy } = JSON.parse(event.data);
 
           switch (type) {
             case 'UPDATE':
@@ -27,7 +27,7 @@ export default function EventSourceHandler() {
                 variant: 'info',
               });
 
-              setReport(report, projectName);
+              setReport(report, projectName, orPolicy);
 
               break;
 
