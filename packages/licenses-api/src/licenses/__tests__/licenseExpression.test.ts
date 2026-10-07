@@ -145,6 +145,12 @@ describe('parseLicenseExpression: leaf semantics', () => {
     expect(parseLicenseExpression('gpl-2.0')).toEqual(license('GPL-2.0-only', { declaredId: 'GPL-2.0' }));
   });
 
+  it('when raw license has an exception in the wrong case, then the exception is canonicalized', () => {
+    expect(parseLicenseExpression('gpl-2.0-only with classpath-exception-2.0')).toEqual(
+      license('GPL-2.0-only', { exception: 'Classpath-exception-2.0' }),
+    );
+  });
+
   it('when raw license is unlicensed in any case, then it is unknown and never Unlicense', () => {
     expect(parseLicenseExpression('unlicensed')).toEqual({ kind: 'unknown', raw: 'unlicensed' });
   });
