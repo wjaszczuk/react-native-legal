@@ -230,7 +230,8 @@ export default function visualizeCommandSetup(program: Command): Command {
       shutdown();
     });
 
-    process.stdin.setRawMode(true);
+    // raw mode is only available on a TTY; without one (e.g. when run from a script or test) the server is stopped with a signal
+    process.stdin.setRawMode?.(true);
     process.stdin.resume();
     process.stdin.setEncoding('utf8');
 
