@@ -1,6 +1,9 @@
+import { parseLicenseExpression } from '../../licenses/licenseExpression';
+import type { LicenseFile } from '../../types';
+import type { License } from '../../types/License';
 import { generateLicensePlistNPMOutput } from '../common';
 
-const makeLicense = (licenseFiles: { file: string; content: string; licenseId?: string }[]) =>
+const makeLicense = (licenseFiles: LicenseFile[]) =>
   ({
     name: '@scope/pkg',
     version: '1.0.0',
@@ -8,9 +11,10 @@ const makeLicense = (licenseFiles: { file: string; content: string; licenseId?: 
     requiredVersion: '1.0.0',
     parentPackages: [],
     rawLicense: 'MIT OR Apache-2.0',
+    license: parseLicenseExpression('MIT OR Apache-2.0'),
     licenseIds: ['MIT', 'Apache-2.0'],
     licenseFiles,
-  }) as never;
+  }) satisfies License;
 
 describe('generateLicensePlistNPMOutput', () => {
   it('when a package has several license files, then the body has every text under its License Identifier heading', () => {

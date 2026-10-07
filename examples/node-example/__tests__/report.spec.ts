@@ -52,7 +52,7 @@ describe('license-kit report', () => {
     const packageName = '@callstack/example-license-gpl-2.0-with-classpath-exception';
 
     it('when format is json, then the leaf keeps the exception', async () => {
-      const json = JSON.parse(await runLicenseKitStdout(['report', '--root', root]));
+      const json = await runReportCommandForJsonOutput(['--root', root]);
 
       expect(json[`${packageName}@1.0.0`]).toMatchObject({
         rawLicense: 'GPL-2.0-only WITH Classpath-exception-2.0',
@@ -69,13 +69,10 @@ describe('license-kit report', () => {
   });
 
   it('when a package uses the legacy licenses array, then the Raw License is its types joined with OR', async () => {
-    const json = JSON.parse(
-      await runLicenseKitStdout([
-        'report',
-        '--root',
-        path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-legacy-licenses-array'),
-      ]),
-    );
+    const json = await runReportCommandForJsonOutput([
+      '--root',
+      path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-legacy-licenses-array'),
+    ]);
 
     expect(json['@callstack/example-license-legacy-licenses-array@1.0.0']).toMatchObject({
       rawLicense: 'MIT OR Apache-2.0',
@@ -89,13 +86,10 @@ describe('license-kit report', () => {
   });
 
   it('when licenses are Unknown, then report keeps the Raw License and has no License Identifiers', async () => {
-    const json = JSON.parse(
-      await runLicenseKitStdout([
-        'report',
-        '--root',
-        path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-unknown-licenses'),
-      ]),
-    );
+    const json = await runReportCommandForJsonOutput([
+      '--root',
+      path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-unknown-licenses'),
+    ]);
 
     expect(json['@callstack/example-license-unlicensed@1.0.0']).toMatchObject({
       rawLicense: 'UNLICENSED',
@@ -130,7 +124,7 @@ describe('license-kit report', () => {
     });
 
     it('when format is about-json, then the library has two licenses, each with its own text', async () => {
-      const output = JSON.parse(await runLicenseKitStdout(['report', '--format', 'about-json']));
+      const output = await runReportCommandForJsonOutput(['--format', 'about-json']);
       const entry = output.find(
         (item: { normalizedPackageNameWithVersion: string }) =>
           item.normalizedPackageNameWithVersion === key.replace('/', '_'),
