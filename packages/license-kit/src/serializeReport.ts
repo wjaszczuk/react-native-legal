@@ -4,6 +4,7 @@ import { type Types, generateAboutLibrariesNPMOutput, renderLicenseExpression } 
 import * as md from 'ts-markdown-builder';
 
 import type { Format } from './types/Format';
+import { formatLicenseFileNames } from './utils/licenseFileUtils';
 
 export function serializeReport({
   licenses,
@@ -26,8 +27,6 @@ export function serializeReport({
           .join('\n\n')
       : packageInfo.licenseFiles[0]?.content;
 
-  const licenseFileNames = ({ licenseFiles }: Types.License) => licenseFiles.map(({ file }) => file).join(', ');
-
   switch (format) {
     default:
     case 'json':
@@ -47,7 +46,7 @@ export function serializeReport({
             author ? `Author: ${author}` : '',
             licenseTexts(packageInfo) ?? '',
             description ? `Description: ${description}` : '',
-            licenseFiles.length > 0 ? `File: ${licenseFileNames(packageInfo)}` : '',
+            licenseFiles.length > 0 ? `File: ${formatLicenseFileNames(licenseFiles)}` : '',
             `Type: ${renderLicenseExpression(license)}`,
             '',
             '---'.repeat(10),
@@ -73,7 +72,7 @@ export function serializeReport({
                 licenseTexts(packageInfo) ?? '',
                 '\n',
                 description ? `Description: ${description}\n` : '',
-                licenseFiles.length > 0 ? `\nFile: ${licenseFileNames(packageInfo)}\n` : '',
+                licenseFiles.length > 0 ? `\nFile: ${formatLicenseFileNames(licenseFiles)}\n` : '',
                 `Type: ${renderLicenseExpression(license)}`,
                 '\n',
                 md.horizontalRule,

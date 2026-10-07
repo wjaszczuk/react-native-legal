@@ -18,6 +18,7 @@ import {
   validateCommonScanOptions,
   validateOrPolicyOption,
 } from '../utils/commandUtils';
+import { formatLicenseFileNames } from '../utils/licenseFileUtils';
 
 export default function copyleftCommandSetup(program: Command): Command {
   return curryOrPolicyOption(
@@ -61,7 +62,7 @@ export default function copyleftCommandSetup(program: Command): Command {
     for (const value of Object.values(licenses)) {
       const { category: licenseCategory, unidentified } = classifyUnavoidableCopyleft(value.license, options.orPolicy);
       // every license file, as a package may ship a copyleft text next to a permissive one
-      const source = value.licenseFiles.length > 0 ? value.licenseFiles.map(({ file }) => file).join(', ') : value.url;
+      const source = value.licenseFiles.length > 0 ? formatLicenseFileNames(value.licenseFiles) : value.url;
       const entry = `- ${value.name}: ${renderLicenseExpression(value.license)}${source ? ` (${source})` : ''}`;
 
       if (licenseCategory === LicenseCategory.STRONG_COPYLEFT) {
