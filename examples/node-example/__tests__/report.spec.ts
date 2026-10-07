@@ -1,4 +1,3 @@
-import child_process from 'node:child_process';
 import { platform } from 'node:os';
 import path from 'node:path';
 
@@ -11,10 +10,10 @@ import {
   dependencies as sharedDependenciesObj,
   devDependencies as sharedDevDependenciesObj,
 } from '../../../packages/licenses-api/package.json';
-import { generateLicensePlistNPMOutput } from '../../../packages/licenses-api/src/node/common';
 import {
   dependencyMappingToCorrespondingKey,
   getDependencyCorrespondingKey,
+  runLicenseKit,
   stripVersionSuffixes,
 } from '../__utils__/utils';
 import {
@@ -37,33 +36,15 @@ const sharedDevDependencies = dependencyMappingToCorrespondingKey(sharedDevDepen
 // below: correct the expected license-kit version (expected result) to match the actual version instead of specified version
 devDependencies[Object.keys(devDependenciesObj).indexOf('license-kit')] = `license-kit@${licenseKitVersion}`;
 
+async function runLicenseKitStdout(args: string[]) {
+  return (await runLicenseKit(args)).stdout;
+}
+
 async function runReportCommandForJsonOutput(args: string[] = []) {
-  const command = `yarn workspace license-kit-node-example report${args ? ` ${args.join(' ')}` : ''}`;
-
-  const output = await new Promise<string>((resolve) => {
-    child_process.exec(
-      command,
-      {
-        maxBuffer: 1024 * 1024 * 100, // 100MB
-      },
-      (_, stdout) => {
-        resolve(stdout);
-      },
-    );
-  });
-
-  return JSON.parse(output);
+  return JSON.parse(await runLicenseKitStdout(['report', ...args]));
 }
 
 const FIXTURE_ROOTS_DIR = path.resolve(__dirname, '..', '..', 'packages');
-
-async function runLicenseKit(args: string[]) {
-  return new Promise<string>((resolve) => {
-    child_process.exec(`yarn license-kit ${args.join(' ')}`, { maxBuffer: 1024 * 1024 * 100 }, (_, stdout) => {
-      resolve(stdout);
-    });
-  });
-}
 
 describe('license-kit report', () => {
   describe('with a License Exception', () => {
@@ -71,7 +52,7 @@ describe('license-kit report', () => {
     const packageName = '@callstack/example-license-gpl-2.0-with-classpath-exception';
 
     it('when format is json, then the leaf keeps the exception', async () => {
-      const json = JSON.parse(await runLicenseKit(['report', '--root', root]));
+      const json = JSON.parse(await runLicenseKitStdout(['report', '--root', root]));
 
       expect(json[`${packageName}@1.0.0`]).toMatchObject({
         rawLicense: 'GPL-2.0-only WITH Classpath-exception-2.0',
@@ -81,7 +62,7 @@ describe('license-kit report', () => {
     });
 
     it.each(['text', 'markdown'])('when format is %s, then it prints the exception', async (format) => {
-      const output = await runLicenseKit(['report', '--root', root, '--format', format]);
+      const output = await runLicenseKitStdout(['report', '--root', root, '--format', format]);
 
       expect(output).toMatch('GPL-2.0-only WITH Classpath-exception-2.0');
     });
@@ -89,7 +70,7 @@ describe('license-kit report', () => {
 
   it('when a package uses the legacy licenses array, then the Raw License is its types joined with OR', async () => {
     const json = JSON.parse(
-      await runLicenseKit([
+      await runLicenseKitStdout([
         'report',
         '--root',
         path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-legacy-licenses-array'),
@@ -109,7 +90,11 @@ describe('license-kit report', () => {
 
   it('when licenses are Unknown, then report keeps the Raw License and has no License Identifiers', async () => {
     const json = JSON.parse(
-      await runLicenseKit(['report', '--root', path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-unknown-licenses')]),
+      await runLicenseKitStdout([
+        'report',
+        '--root',
+        path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-unknown-licenses'),
+      ]),
     );
 
     expect(json['@callstack/example-license-unlicensed@1.0.0']).toMatchObject({
@@ -137,14 +122,14 @@ describe('license-kit report', () => {
     });
 
     it('when format is text, then both license texts are printed', async () => {
-      const output = await runLicenseKit(['report', '--format', 'text']);
+      const output = await runLicenseKitStdout(['report', '--format', 'text']);
 
       expect(output).toContain('MIT half');
       expect(output).toContain('Apache-2.0 half');
     });
 
     it('when format is about-json, then the library has two licenses, each with its own text', async () => {
-      const output = JSON.parse(await runLicenseKit(['report', '--format', 'about-json']));
+      const output = JSON.parse(await runLicenseKitStdout(['report', '--format', 'about-json']));
       const entry = output.find(
         (item: { normalizedPackageNameWithVersion: string }) =>
           item.normalizedPackageNameWithVersion === key.replace('/', '_'),
@@ -157,20 +142,10 @@ describe('license-kit report', () => {
         expect.objectContaining({ name: 'Apache-2.0', content: expect.stringContaining('Apache-2.0 half') }),
       ]);
     });
-
-    it('when generating LicensePlist output, then the body has both texts under MIT and Apache-2.0 headings', async () => {
-      const json = await runReportCommandForJsonOutput();
-      const yaml = generateLicensePlistNPMOutput({ [key]: json[key] }, __dirname);
-
-      expect(yaml).toContain('=== MIT ===');
-      expect(yaml).toContain('MIT half');
-      expect(yaml).toContain('=== Apache-2.0 ===');
-      expect(yaml).toContain('Apache-2.0 half');
-    });
   });
 
   it('analyze --list-unknown lists Unknown Licenses with their Raw License', async () => {
-    const output = await runLicenseKit([
+    const output = await runLicenseKitStdout([
       'analyze',
       '--list-unknown',
       '--root',

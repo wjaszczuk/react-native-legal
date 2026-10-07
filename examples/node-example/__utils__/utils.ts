@@ -1,3 +1,5 @@
+import child_process from 'node:child_process';
+
 /**
  * Returns the internal representation format keys for the dependencies in a package.json file.
  * The keys are in the format of `packageName@version`.
@@ -36,5 +38,21 @@ export function stripVersionSuffixes(listOfResults: string[]): string[] {
     const lastAtIndex = result.lastIndexOf('@');
 
     return lastAtIndex !== -1 ? result.slice(0, lastAtIndex) : result;
+  });
+}
+
+/**
+ * Runs the `license-kit` CLI of the workspace with the given arguments.
+ * Never rejects: a failing command resolves with its (non-zero) exit code.
+ */
+export function runLicenseKit(args: string[] = []) {
+  return new Promise<{ exitCode: number; stdout: string; stderr: string }>((resolve) => {
+    child_process.exec(
+      `yarn license-kit ${args.join(' ')}`,
+      { maxBuffer: 1024 * 1024 * 100 }, // 100MB
+      (error, stdout, stderr) => {
+        resolve({ exitCode: typeof error?.code === 'number' ? error.code : 0, stdout, stderr });
+      },
+    );
   });
 }

@@ -1,16 +1,13 @@
-import child_process from 'node:child_process';
 import path from 'node:path';
+
+import { runLicenseKit } from '../__utils__/utils';
 
 type CopyleftSection = 'strong' | 'weak';
 
 const FIXTURE_ROOTS_DIR = path.resolve(__dirname, '..', '..', 'packages');
 
-async function runCopyleftCommand(args: string[] = []) {
-  return new Promise<{ exitCode: number; stderr: string }>((resolve) => {
-    child_process.exec(`yarn license-kit copyleft ${args.join(' ')}`, (error, _, stderr) => {
-      resolve({ exitCode: error?.code ?? 0, stderr });
-    });
-  });
+function runCopyleftCommand(args: string[] = []) {
+  return runLicenseKit(['copyleft', ...args]);
 }
 
 /**
