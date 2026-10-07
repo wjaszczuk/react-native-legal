@@ -77,24 +77,37 @@ function collectLicenseLeaves(expression: LicenseExpression): LicenseLeaf[] {
  * when the package has one license or exactly one unlinked text.
  */
 export function prepareAboutLibrariesLicenses(license: License): { name: string; content: string }[] {
-  const leaves = [...new Map(collectLicenseLeaves(license.license).map((leaf) => [leaf.id, leaf])).values()];
-  const entries: { id?: string; name: string }[] =
-    leaves.length > 0
-      ? leaves.map((leaf) => ({ id: leaf.id, name: renderLicenseExpression(leaf) }))
-      : license.rawLicense
-        ? [{ name: license.rawLicense }]
-        : license.licenseFiles.length > 0
-          ? [{ name: renderLicenseExpression(license.license) }]
-          : [];
-  const unlinkedContents = license.licenseFiles.filter((file) => !file.licenseId).map((file) => file.content);
+  const entries = getAboutLibrariesEntries(license);
+  const unlinkedTexts = license.licenseFiles.filter((file) => !file.licenseId).map((file) => file.content);
+
+  // unlinked texts go to every license when there is only one text (it may cover all of them),
+  // or when there is only one license (it owns every text)
+  const sharedContent = entries.length === 1 || unlinkedTexts.length === 1 ? unlinkedTexts.join('\n\n') : '';
 
   return entries.map(({ id, name }) => ({
     name,
-    content:
-      license.licenseFiles.find((file) => id !== undefined && file.licenseId === id)?.content ??
-      // a single license owns every text that is not linked to another one
-      (entries.length === 1 || unlinkedContents.length === 1 ? unlinkedContents.join('\n\n') : ''),
+    content: (id ? license.licenseFiles.find((file) => file.licenseId === id)?.content : undefined) ?? sharedContent,
   }));
+}
+
+function getAboutLibrariesEntries(license: License): { id?: string; name: string }[] {
+  const leavesById = new Map(collectLicenseLeaves(license.license).map((leaf) => [leaf.id, leaf]));
+
+  if (leavesById.size > 0) {
+    return [...leavesById.values()].map((leaf) => ({ id: leaf.id, name: renderLicenseExpression(leaf) }));
+  }
+
+  // Unknown License: the Raw License is the best name we have
+  if (license.rawLicense) {
+    return [{ name: license.rawLicense }];
+  }
+
+  // nothing declared, but the package ships a license text, so keep it
+  if (license.licenseFiles.length > 0) {
+    return [{ name: renderLicenseExpression(license.license) }];
+  }
+
+  return [];
 }
 
 export function prepareAboutLibrariesLicenseField(name: string, content?: string) {
