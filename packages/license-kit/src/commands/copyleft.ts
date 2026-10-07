@@ -53,7 +53,8 @@ export default function copyleftCommandSetup(program: Command): Command {
 
     for (const value of Object.values(licenses)) {
       const licenseCategory = classifyUnavoidableCopyleft(value.license, options.orPolicy);
-      const source = value.licenseFiles[0]?.file ?? value.url;
+      // every license file, as a multi-license package may ship a copyleft text next to a permissive one
+      const source = value.licenseFiles.length > 0 ? value.licenseFiles.map(({ file }) => file).join(', ') : value.url;
       const entry = `- ${value.name}: ${renderLicenseExpression(value.license)}${source ? ` (${source})` : ''}`;
 
       if (licenseCategory === LicenseCategory.STRONG_COPYLEFT) {

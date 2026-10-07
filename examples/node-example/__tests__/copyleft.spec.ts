@@ -186,6 +186,13 @@ describe('license-kit copyleft', () => {
       expect(exitCode).toBe(expectedExitCode);
     });
 
+    it('when a package ships several license files, then its line lists all of them', async () => {
+      const { stderr } = await runCopyleftCommand([]);
+      const line = stderr.split('\n').find((l) => l.startsWith('- @callstack/example-license-mit-and-lgpl-2.1:'));
+
+      expect(line).toMatch(/\(.*LICENSE-LGPL, .*LICENSE-MIT\)$/);
+    });
+
     it('when a package has a License Exception, then the copyleft output shows the exception', async () => {
       const { stderr } = await runCopyleftCommand([
         '--root',
