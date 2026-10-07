@@ -72,7 +72,7 @@ describe('analyzeLicenses', () => {
   ] as const)(
     'when OR Policy is %s, then packages are categorized by their License Expression',
     (orPolicy, expectedByCategory, expectedDualLicenseCategory) => {
-      const { byCategory, categoryByLicense, categorizedLicenses } = analyzeLicenses(REPORT, orPolicy);
+      const { byCategory, categoryByLicense } = analyzeLicenses(REPORT, orPolicy);
 
       expect(byCategory).toEqual(expectedByCategory);
       expect(categoryByLicense).toEqual({
@@ -82,7 +82,16 @@ describe('analyzeLicenses', () => {
         'MIT AND LGPL-2.1-only': LicenseCategory.WEAK_COPYLEFT,
         unknown: LicenseCategory.UNKNOWN,
       });
-      expect(categorizedLicenses['e@1.0.0']).toBe(expectedDualLicenseCategory);
+    },
+  );
+
+  it.each([
+    ['most-restrictive', LicenseCategory.STRONG_COPYLEFT],
+    ['least-restrictive', LicenseCategory.PERMISSIVE],
+  ] as const)(
+    'when OR Policy is %s, then a package with an OR License Expression gets the category chosen by the policy',
+    (orPolicy, expectedCategory) => {
+      expect(analyzeLicenses(REPORT, orPolicy).categorizedLicenses['e@1.0.0']).toBe(expectedCategory);
     },
   );
 

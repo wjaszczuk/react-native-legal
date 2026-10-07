@@ -116,6 +116,24 @@ describe('parseLicenseExpression: leaf semantics', () => {
     expect(parseLicenseExpression(rawLicense)).toEqual({ kind: 'unknown', raw: rawLicense });
   });
 
+  it('when the same license has different exceptions on both sides, then each leaf keeps its own exception', () => {
+    expect(
+      parseLicenseExpression('GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH GCC-exception-3.1'),
+    ).toEqual({
+      kind: 'or',
+      left: license('GPL-2.0-only', { exception: 'Classpath-exception-2.0' }),
+      right: license('GPL-2.0-only', { exception: 'GCC-exception-3.1' }),
+    });
+  });
+
+  it('when only one of two identical licenses has an exception, then only that leaf keeps it', () => {
+    expect(parseLicenseExpression('GPL-2.0-only AND GPL-2.0-only WITH Classpath-exception-2.0')).toEqual({
+      kind: 'and',
+      left: license('GPL-2.0-only'),
+      right: license('GPL-2.0-only', { exception: 'Classpath-exception-2.0' }),
+    });
+  });
+
   it('when an exception is written without WITH, then it is unknown', () => {
     expect(parseLicenseExpression('mit or classpath-exception-2.0')).toEqual({
       kind: 'unknown',
@@ -161,6 +179,9 @@ describe('collectLicenseIds', () => {
     ['MIT AND MIT', ['MIT']],
     ['MIT AND OR Apache-2.0', []],
     ['UNLICENSED', []],
+    // exceptions are not part of the License Identifier, so the same license with different exceptions is deduplicated
+    ['GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH GCC-exception-3.1', ['GPL-2.0-only']],
+    ['GPL-2.0-only AND GPL-2.0-only WITH Classpath-exception-2.0', ['GPL-2.0-only']],
   ] satisfies [string, string[]][])('when raw license is %s, then it returns %o', (rawLicense, expectedResult) => {
     expect(collectLicenseIds(parseLicenseExpression(rawLicense))).toEqual(expectedResult);
   });
@@ -242,6 +263,15 @@ describe('renderLicenseExpression: leaf semantics', () => {
     // the exception binds tighter than AND and OR, so it needs no parentheses
     ['MIT AND GPL-2.0-only WITH Classpath-exception-2.0', 'MIT AND GPL-2.0-only WITH Classpath-exception-2.0'],
     ['GPL-2.0-only WITH Classpath-exception-2.0 OR MIT', 'GPL-2.0-only WITH Classpath-exception-2.0 OR MIT'],
+    // the same license with different exceptions is not collapsed
+    [
+      'GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH GCC-exception-3.1',
+      'GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH GCC-exception-3.1',
+    ],
+    [
+      'GPL-2.0-only AND GPL-2.0-only WITH Classpath-exception-2.0',
+      'GPL-2.0-only AND GPL-2.0-only WITH Classpath-exception-2.0',
+    ],
   ] satisfies [string, string][])('when raw license is %s, then it renders %s', (rawLicense, expected) => {
     expect(renderLicenseExpression(parseLicenseExpression(rawLicense))).toBe(expected);
   });
