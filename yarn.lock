@@ -1787,6 +1787,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@callstack/example-license-gpl-2.0-with-classpath-exception-with-text@workspace:*, @callstack/example-license-gpl-2.0-with-classpath-exception-with-text@workspace:examples/packages/example-license-gpl-2.0-with-classpath-exception-with-text":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-gpl-2.0-with-classpath-exception-with-text@workspace:examples/packages/example-license-gpl-2.0-with-classpath-exception-with-text"
+  languageName: unknown
+  linkType: soft
+
 "@callstack/example-license-gpl-2.0-with-classpath-exception@workspace:*, @callstack/example-license-gpl-2.0-with-classpath-exception@workspace:examples/packages/example-license-gpl-2.0-with-classpath-exception":
   version: 0.0.0-use.local
   resolution: "@callstack/example-license-gpl-2.0-with-classpath-exception@workspace:examples/packages/example-license-gpl-2.0-with-classpath-exception"
@@ -1823,6 +1829,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@callstack/example-license-lgpl-3.0-plus@workspace:*, @callstack/example-license-lgpl-3.0-plus@workspace:examples/packages/example-license-lgpl-3.0-plus":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-lgpl-3.0-plus@workspace:examples/packages/example-license-lgpl-3.0-plus"
+  languageName: unknown
+  linkType: soft
+
 "@callstack/example-license-mit-and-lgpl-2.1@workspace:*, @callstack/example-license-mit-and-lgpl-2.1@workspace:examples/packages/example-license-mit-and-lgpl-2.1":
   version: 0.0.0-use.local
   resolution: "@callstack/example-license-mit-and-lgpl-2.1@workspace:examples/packages/example-license-mit-and-lgpl-2.1"
@@ -1832,6 +1844,12 @@ __metadata:
 "@callstack/example-license-mit-or-apache-2.0-and-isc@workspace:*, @callstack/example-license-mit-or-apache-2.0-and-isc@workspace:examples/packages/example-license-mit-or-apache-2.0-and-isc":
   version: 0.0.0-use.local
   resolution: "@callstack/example-license-mit-or-apache-2.0-and-isc@workspace:examples/packages/example-license-mit-or-apache-2.0-and-isc"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-license-mit-or-apache-2.0-single-file@workspace:*, @callstack/example-license-mit-or-apache-2.0-single-file@workspace:examples/packages/example-license-mit-or-apache-2.0-single-file":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-mit-or-apache-2.0-single-file@workspace:examples/packages/example-license-mit-or-apache-2.0-single-file"
   languageName: unknown
   linkType: soft
 
@@ -16638,6 +16656,13 @@ __metadata:
     "@babel/core": "npm:^7.29.7"
     "@babel/preset-env": "npm:^7.29.7"
     "@babel/runtime": "npm:^7.29.7"
+    "@callstack/example-license-gpl-2.0-with-classpath-exception": "workspace:*"
+    "@callstack/example-license-gpl-2.0-with-classpath-exception-with-text": "workspace:*"
+    "@callstack/example-license-lgpl-3.0-plus": "workspace:*"
+    "@callstack/example-license-mit-and-lgpl-2.1": "workspace:*"
+    "@callstack/example-license-mit-or-apache-2.0": "workspace:*"
+    "@callstack/example-license-mit-or-apache-2.0-single-file": "workspace:*"
+    "@callstack/example-license-mit-or-gpl-3.0": "workspace:*"
     "@react-native-community/cli": "npm:^20.1.0"
     "@react-native-community/cli-platform-android": "npm:^20.1.0"
     "@react-native-community/cli-platform-ios": "npm:^20.1.0"
