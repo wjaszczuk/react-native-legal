@@ -26,6 +26,8 @@ export function serializeReport({
           .join('\n\n')
       : packageInfo.licenseFiles[0]?.content;
 
+  const licenseFileNames = ({ licenseFiles }: Types.License) => licenseFiles.map(({ file }) => file).join(', ');
+
   switch (format) {
     default:
     case 'json':
@@ -45,7 +47,7 @@ export function serializeReport({
             author ? `Author: ${author}` : '',
             licenseTexts(packageInfo) ?? '',
             description ? `Description: ${description}` : '',
-            licenseFiles[0] ? `File: ${licenseFiles[0].file}` : '',
+            licenseFiles.length > 0 ? `File: ${licenseFileNames(packageInfo)}` : '',
             `Type: ${renderLicenseExpression(license)}`,
             '',
             '---'.repeat(10),
@@ -71,7 +73,7 @@ export function serializeReport({
                 licenseTexts(packageInfo) ?? '',
                 '\n',
                 description ? `Description: ${description}\n` : '',
-                licenseFiles[0] ? `\nFile: ${licenseFiles[0].file}\n` : '',
+                licenseFiles.length > 0 ? `\nFile: ${licenseFileNames(packageInfo)}\n` : '',
                 `Type: ${renderLicenseExpression(license)}`,
                 '\n',
                 md.horizontalRule,

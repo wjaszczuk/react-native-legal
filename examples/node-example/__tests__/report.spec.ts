@@ -126,6 +126,7 @@ describe('license-kit report', () => {
 
       expect(output).toContain('MIT half');
       expect(output).toContain('Apache-2.0 half');
+      expect(output).toContain('File: LICENSE-APACHE, LICENSE-MIT');
     });
 
     it('when format is about-json, then the library has two licenses, each with its own text', async () => {
