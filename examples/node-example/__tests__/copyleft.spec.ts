@@ -50,26 +50,19 @@ describe('license-kit copyleft', () => {
   );
 
   it('should report error for strong copyleft licenses', async () => {
-    const output = await new Promise<string>((resolve) => {
-      child_process.exec('yarn workspace license-kit-node-example copyleft', (_, __, stderr) => {
-        resolve(stderr);
-      });
-    });
+    const { stderr } = await runCopyleftCommand();
 
-    expect(output).toMatch('Copyleft licenses found in the following dependencies:');
-    expect(output).toMatch('dhtmlx-gantt: GPL-2.0');
+    expect(stderr).toMatch('Copyleft licenses found in the following dependencies:');
+    expect(stderr).toMatch('dhtmlx-gantt: GPL-2.0');
   });
-  it('should report error for strong and weak copyleft licenses', async () => {
-    const output = await new Promise<string>((resolve) => {
-      child_process.exec('yarn workspace license-kit-node-example weak-copyleft', (_, __, stderr) => {
-        resolve(stderr);
-      });
-    });
 
-    expect(output).toMatch('Copyleft licenses found in the following dependencies:');
-    expect(output).toMatch('dhtmlx-gantt: GPL-2.0');
-    expect(output).toMatch('Weak copyleft licenses found in the following dependencies:');
-    expect(output).toMatch('mariadb: LGPL-2.1-or-later');
+  it('should report error for strong and weak copyleft licenses', async () => {
+    const { stderr } = await runCopyleftCommand(['--error-on-weak']);
+
+    expect(stderr).toMatch('Copyleft licenses found in the following dependencies:');
+    expect(stderr).toMatch('dhtmlx-gantt: GPL-2.0');
+    expect(stderr).toMatch('Weak copyleft licenses found in the following dependencies:');
+    expect(stderr).toMatch('mariadb: LGPL-2.1-or-later');
   });
 
   describe('with License Expressions', () => {
