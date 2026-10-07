@@ -18,26 +18,19 @@ const OR_COMPARISON_STRATEGY: Record<OrPolicy, (a: LicenseCategory, b: LicenseCa
 };
 
 /**
- * Categorizes a license based on its copyleft characteristics.
- * @param licenseType the license type
- * @returns the license category
+ * Categorizes a canonical License Identifier from a parsed License Expression.
+ * Not for raw strings: an identifier outside the copyleft tables is assumed permissive,
+ * which is only safe because the parser rejects unrecognised identifiers.
  */
-export function categorizeLicense(licenseType?: string): LicenseCategory {
-  if (!licenseType || licenseType === 'unknown') {
-    return LicenseCategory.UNKNOWN;
-  }
-
-  // check for strong copyleft licenses
-  if (STRONG_COPYLEFT_LICENSES_LOWERCASE.has(licenseType.toLowerCase())) {
+function categorizeLicenseId(licenseId: string): LicenseCategory {
+  if (STRONG_COPYLEFT_LICENSES_LOWERCASE.has(licenseId.toLowerCase())) {
     return LicenseCategory.STRONG_COPYLEFT;
   }
 
-  // check for weak copyleft licenses
-  if (WEAK_COPYLEFT_LICENSES_LOWERCASE.has(licenseType.toLowerCase())) {
+  if (WEAK_COPYLEFT_LICENSES_LOWERCASE.has(licenseId.toLowerCase())) {
     return LicenseCategory.WEAK_COPYLEFT;
   }
 
-  // everything else is considered permissive
   return LicenseCategory.PERMISSIVE;
 }
 
@@ -63,7 +56,7 @@ export function classifyLicenseExpression(
 ): LicenseCategory {
   switch (expression.kind) {
     case 'license':
-      return isLicenseRef(expression.id) ? LicenseCategory.UNKNOWN : categorizeLicense(expression.id);
+      return isLicenseRef(expression.id) ? LicenseCategory.UNKNOWN : categorizeLicenseId(expression.id);
     case 'unknown':
       return LicenseCategory.UNKNOWN;
     case 'and':

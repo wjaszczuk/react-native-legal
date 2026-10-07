@@ -61,6 +61,7 @@ const { content, file } = licenseFiles[0] ?? {};
 
 ## Other changes
 
+- `categorizeLicense` is no longer exported. Parse the declaration with `parseLicenseExpression` and use `classifyLicenseExpression` instead; unlike `categorizeLicense`, it reports unrecognised values as Unknown.
 - `report --format text` and `markdown` print the normalized expression.
 - `report --format about-json` emits one license per License Identifier. On iOS, all license texts of a package are combined into one entry with a heading per license.
 - `analyze` groups its breakdown by the normalized expression.
