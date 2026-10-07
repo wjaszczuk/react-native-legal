@@ -2,7 +2,7 @@ import path from 'node:path';
 
 import { runLicenseKit } from '../__utils__/utils';
 
-type CopyleftSection = 'strong' | 'weak' | 'undetermined';
+type CopyleftSection = 'strong' | 'weak' | 'unidentified';
 
 const FIXTURE_ROOTS_DIR = path.resolve(__dirname, '..', '..', 'packages');
 
@@ -11,16 +11,16 @@ function runCopyleftCommand(args: string[] = []) {
 }
 
 /**
- * Maps each listed package to the section of the copyleft output it is listed in, together with its rendered license.
+ * Maps each listed package to the sections of the copyleft output it is listed in, together with its rendered license.
  */
 function parseCopyleftOutput(stderr: string) {
-  const listed: Record<string, { section: CopyleftSection; license: string }> = {};
+  const listed: Record<string, { sections: CopyleftSection[]; license: string }> = {};
 
   let section: CopyleftSection | undefined;
 
   for (const line of stderr.split('\n')) {
     if (line.includes('Copyleft could not be ruled out')) {
-      section = 'undetermined';
+      section = 'unidentified';
     } else if (line.includes('Weak copyleft licenses found')) {
       section = 'weak';
     } else if (line.includes('Copyleft licenses found')) {
@@ -30,7 +30,7 @@ function parseCopyleftOutput(stderr: string) {
     const match = line.match(/^- (.+?): (.+?)(?: \([^()]*\/[^()]*\))?$/);
 
     if (match && section) {
-      listed[match[1]] = { section, license: match[2] };
+      listed[match[1]] = { sections: [...(listed[match[1]]?.sections ?? []), section], license: match[2] };
     }
   }
 
@@ -107,7 +107,7 @@ describe('license-kit copyleft', () => {
 
           expect({ packageName, listed: listed[packageName] }).toEqual({
             packageName,
-            listed: section ? { section, license } : undefined,
+            listed: section ? { sections: [section], license } : undefined,
           });
         }
       },
@@ -178,9 +178,22 @@ describe('license-kit copyleft', () => {
       ],
       ['Unknown Licenses alone do not fail', 0, 'unknown-licenses', []],
       ['Unknown Licenses alone do not fail with --error-on-weak', 0, 'unknown-licenses', ['--error-on-weak']],
-      ['Unknown Licenses fail with --error-on-unknown', 3, 'unknown-licenses', ['--error-on-unknown']],
-      ['strong copyleft keeps exit code 1 with --error-on-unknown', 1, 'license-ref', ['--error-on-unknown']],
-      ['permissive packages pass with --error-on-unknown', 0, 'no-copyleft', ['--error-on-unknown']],
+      ['Unknown Licenses fail with --error-on-unidentified', 3, 'unknown-licenses', ['--error-on-unidentified']],
+      ['strong copyleft keeps exit code 1 with --error-on-unidentified', 1, 'license-ref', ['--error-on-unidentified']],
+      ['permissive packages pass with --error-on-unidentified', 0, 'no-copyleft', ['--error-on-unidentified']],
+      ['weak and Unidentified License passes without flags', 0, 'weak-and-unidentified', []],
+      [
+        'weak and Unidentified License fails with --error-on-unidentified',
+        3,
+        'weak-and-unidentified',
+        ['--error-on-unidentified'],
+      ],
+      [
+        'weak copyleft keeps exit code 2 over --error-on-unidentified',
+        2,
+        'weak-and-unidentified',
+        ['--error-on-weak', '--error-on-unidentified'],
+      ],
     ] as [string, number, string, string[]][])('%s: exits with %d', async (_scenario, expectedExitCode, root, args) => {
       const { exitCode } = await runCopyleftCommand([
         '--root',
@@ -191,16 +204,48 @@ describe('license-kit copyleft', () => {
       expect(exitCode).toBe(expectedExitCode);
     });
 
-    it('when a package has an Unknown License, then it is listed as undetermined and the result is not clean', async () => {
+    it('when a package has an Unknown License, then it is listed as unidentified next to the no copyleft result', async () => {
       const { exitCode, stdout, stderr } = await runCopyleftCommand([
         '--root',
         path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-unknown-licenses'),
       ]);
+      const listed = Object.values(parseCopyleftOutput(stderr));
 
       expect(exitCode).toBe(0);
       expect(stderr).toMatch('Copyleft could not be ruled out');
-      expect(Object.values(parseCopyleftOutput(stderr)).every(({ section }) => section === 'undetermined')).toBe(true);
-      expect(stdout).not.toMatch('No copyleft licenses found');
+      expect(listed).not.toHaveLength(0);
+      expect(listed.every(({ sections }) => sections.join() === 'unidentified')).toBe(true);
+      expect(stdout).toMatch('No copyleft licenses found');
+    });
+
+    it('when a package is weak copyleft and an Unidentified License, then it is listed in both sections', async () => {
+      const { exitCode, stderr } = await runCopyleftCommand([
+        '--root',
+        path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-weak-and-unidentified'),
+      ]);
+
+      expect(exitCode).toBe(0);
+      expect(parseCopyleftOutput(stderr)).toEqual({
+        '@callstack/example-license-lgpl-2.1-and-license-ref': {
+          sections: ['weak', 'unidentified'],
+          license: 'LGPL-2.1-only AND LicenseRef-Custom',
+        },
+      });
+    });
+
+    it('when a package is strong copyleft and an Unknown License, then it is listed only as strong copyleft', async () => {
+      const { stderr } = await runCopyleftCommand([
+        '--root',
+        path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-license-ref'),
+        '--error-on-unidentified',
+      ]);
+
+      expect(parseCopyleftOutput(stderr)).toEqual({
+        '@callstack/example-license-gpl-3.0-and-license-ref': {
+          sections: ['strong'],
+          license: 'GPL-3.0-only AND LicenseRef-Custom',
+        },
+      });
     });
 
     it('when a package ships several license files, then its line lists all of them', async () => {
@@ -218,7 +263,7 @@ describe('license-kit copyleft', () => {
 
       expect(parseCopyleftOutput(stderr)).toEqual({
         '@callstack/example-license-gpl-2.0-with-classpath-exception': {
-          section: 'strong',
+          sections: ['strong'],
           license: 'GPL-2.0-only WITH Classpath-exception-2.0',
         },
       });

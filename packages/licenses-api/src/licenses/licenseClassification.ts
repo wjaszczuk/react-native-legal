@@ -77,7 +77,7 @@ export interface UnavoidableCopyleft {
   /** The known copyleft that must be complied with, never unknown; permissive when no known operand requires copyleft */
   category: LicenseCategory;
   /** `true` when an Unknown operand could require more than `category`, so `category` is only a lower bound */
-  undetermined: boolean;
+  unidentified: boolean;
 }
 
 /**
@@ -90,19 +90,19 @@ export interface UnavoidableCopyleft {
  * - an expression with no known operand requires no copyleft.
  *
  * Ignoring an Unknown operand can also understate the result (`MIT AND LicenseRef-Custom`, or an expression
- * that is wholly Unknown), so the result says when that happened: `undetermined` is `true` when an Unknown operand
+ * that is wholly Unknown), so the result says when that happened: `unidentified` is `true` when an Unknown operand
  * could require more than the category under the OR Policy and the category is not already strong copyleft,
- * the most restrictive known category. `MIT OR LicenseRef-Custom` is only undetermined under the most restrictive OR Policy.
+ * the most restrictive known category. `MIT OR LicenseRef-Custom` is only unidentified under the most restrictive OR Policy.
  *
  * @param expression the License Expression to check
  * @param orPolicy the OR Policy applied to every OR in the expression; defaults to {@link DEFAULT_OR_POLICY}
- * @returns the known copyleft category, and whether an Unknown operand leaves it undetermined
+ * @returns the known copyleft category, and whether an Unknown operand leaves it unidentified
  * @example
  * classifyUnavoidableCopyleft(parseLicenseExpression('GPL-3.0-only AND LicenseRef-Custom'));
- * // { category: LicenseCategory.STRONG_COPYLEFT, undetermined: false }
+ * // { category: LicenseCategory.STRONG_COPYLEFT, unidentified: false }
  * @example
  * classifyUnavoidableCopyleft(parseLicenseExpression('MIT AND LicenseRef-Custom'));
- * // { category: LicenseCategory.PERMISSIVE, undetermined: true }
+ * // { category: LicenseCategory.PERMISSIVE, unidentified: true }
  */
 export function classifyUnavoidableCopyleft(
   expression: LicenseExpression,
@@ -112,7 +112,7 @@ export function classifyUnavoidableCopyleft(
 
   return {
     category,
-    undetermined: category !== LicenseCategory.STRONG_COPYLEFT && hasUnknownOperand(expression, orPolicy),
+    unidentified: category !== LicenseCategory.STRONG_COPYLEFT && hasUnknownOperand(expression, orPolicy),
   };
 }
 

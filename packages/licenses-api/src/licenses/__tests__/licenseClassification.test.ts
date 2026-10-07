@@ -187,7 +187,7 @@ describe('classifyUnavoidableCopyleft', () => {
     },
   );
 
-  // undetermined: an Unknown operand could require more than the known category under the OR Policy
+  // unidentified: an Unknown operand could require more than the known category under the OR Policy
   it.each([
     ['MIT', false, false],
     ['MIT OR GPL-3.0-only', false, false],
@@ -210,19 +210,19 @@ describe('classifyUnavoidableCopyleft', () => {
     ['SEE LICENSE IN LICENSE.md', true, true],
     ['GPL-3.0-only OR Foo-1.0', true, true],
   ] satisfies [string, boolean, boolean][])(
-    'when raw license is %s, then undetermined is %s under most-restrictive and %s under least-restrictive',
+    'when raw license is %s, then unidentified is %s under most-restrictive and %s under least-restrictive',
     (rawLicense, mostRestrictiveResult, leastRestrictiveResult) => {
       const expression = parseLicenseExpression(rawLicense);
 
-      expect(classifyUnavoidableCopyleft(expression, 'most-restrictive').undetermined).toBe(mostRestrictiveResult);
-      expect(classifyUnavoidableCopyleft(expression, 'least-restrictive').undetermined).toBe(leastRestrictiveResult);
+      expect(classifyUnavoidableCopyleft(expression, 'most-restrictive').unidentified).toBe(mostRestrictiveResult);
+      expect(classifyUnavoidableCopyleft(expression, 'least-restrictive').unidentified).toBe(leastRestrictiveResult);
     },
   );
 
-  it('when license is unknown with no raw value, then it requires no known copyleft but is undetermined', () => {
+  it('when license is unknown with no raw value, then it requires no known copyleft but is unidentified', () => {
     expect(classifyUnavoidableCopyleft({ kind: 'unknown', raw: null }, 'most-restrictive')).toEqual({
       category: LicenseCategory.PERMISSIVE,
-      undetermined: true,
+      unidentified: true,
     });
   });
 });

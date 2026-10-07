@@ -1757,6 +1757,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@callstack/example-copyleft-root-weak-and-unidentified@workspace:examples/packages/example-copyleft-root-weak-and-unidentified":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-copyleft-root-weak-and-unidentified@workspace:examples/packages/example-copyleft-root-weak-and-unidentified"
+  dependencies:
+    "@callstack/example-license-lgpl-2.1-and-license-ref": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@callstack/example-copyleft-root-weak-copyleft-only@workspace:examples/packages/example-copyleft-root-weak-copyleft-only":
   version: 0.0.0-use.local
   resolution: "@callstack/example-copyleft-root-weak-copyleft-only@workspace:examples/packages/example-copyleft-root-weak-copyleft-only"
@@ -1800,6 +1808,12 @@ __metadata:
 "@callstack/example-license-legacy-licenses-array@workspace:*, @callstack/example-license-legacy-licenses-array@workspace:examples/packages/example-license-legacy-licenses-array":
   version: 0.0.0-use.local
   resolution: "@callstack/example-license-legacy-licenses-array@workspace:examples/packages/example-license-legacy-licenses-array"
+  languageName: unknown
+  linkType: soft
+
+"@callstack/example-license-lgpl-2.1-and-license-ref@workspace:*, @callstack/example-license-lgpl-2.1-and-license-ref@workspace:examples/packages/example-license-lgpl-2.1-and-license-ref":
+  version: 0.0.0-use.local
+  resolution: "@callstack/example-license-lgpl-2.1-and-license-ref@workspace:examples/packages/example-license-lgpl-2.1-and-license-ref"
   languageName: unknown
   linkType: soft
 

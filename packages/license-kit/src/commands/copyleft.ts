@@ -30,12 +30,12 @@ export default function copyleftCommandSetup(program: Command): Command {
             `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 0 - no copyleft licenses found` +
             `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 1 - strong copyleft licenses found` +
             `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 2 - weak copyleft licenses found (if --error-on-weak is set)` +
-            `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 3 - copyleft could not be ruled out because of unknown licenses (if --error-on-unknown is set)`,
+            `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 3 - copyleft could not be ruled out because some licenses could not be identified (if --error-on-unidentified is set)`,
         )
         .option('--error-on-weak', 'Exit with error if weak copyleft licenses are found', false)
         .option(
-          '--error-on-unknown',
-          'Exit with error if copyleft cannot be ruled out because of unknown licenses',
+          '--error-on-unidentified',
+          'Exit with error if copyleft cannot be ruled out because some licenses could not be identified',
           false,
         )
         .option('--root [path]', 'Path to the root of your project', '.'),
@@ -56,11 +56,11 @@ export default function copyleftCommandSetup(program: Command): Command {
 
     const strongCopyleftLicensesFound: string[] = [];
     const weakCopyleftLicensesFound: string[] = [];
-    const undeterminedLicensesFound: string[] = [];
+    const unidentifiedLicensesFound: string[] = [];
 
     for (const value of Object.values(licenses)) {
-      const { category: licenseCategory, undetermined } = classifyUnavoidableCopyleft(value.license, options.orPolicy);
-      // every license file, as a multi-license package may ship a copyleft text next to a permissive one
+      const { category: licenseCategory, unidentified } = classifyUnavoidableCopyleft(value.license, options.orPolicy);
+      // every license file, as a package may ship a copyleft text next to a permissive one
       const source = value.licenseFiles.length > 0 ? value.licenseFiles.map(({ file }) => file).join(', ') : value.url;
       const entry = `- ${value.name}: ${renderLicenseExpression(value.license)}${source ? ` (${source})` : ''}`;
 
@@ -72,8 +72,8 @@ export default function copyleftCommandSetup(program: Command): Command {
         weakCopyleftLicensesFound.push(entry);
       }
 
-      if (undetermined) {
-        undeterminedLicensesFound.push(entry);
+      if (unidentified) {
+        unidentifiedLicensesFound.push(entry);
       }
     }
 
@@ -109,23 +109,24 @@ export default function copyleftCommandSetup(program: Command): Command {
       noCopyleftLicensesFound = false;
     }
 
-    if (undeterminedLicensesFound.length > 0) {
-      // a warning unless --error-on-unknown is set, but it never reports a clean result
-      console.warn(
-        `${options.errorOnUnknown ? ERROR_EMOJI : WARNING_EMOJI} Copyleft could not be ruled out for the following dependencies, as their license is unknown (at least in part):`,
+    if (unidentifiedLicensesFound.length > 0) {
+      console.error(
+        `${
+          options.errorOnUnidentified ? ERROR_EMOJI : WARNING_EMOJI
+        } Copyleft could not be ruled out for the following dependencies, as their license could not be identified (at least in part):`,
       );
 
-      undeterminedLicensesFound.forEach((entry) => {
-        (options.errorOnUnknown ? console.error : console.warn)(entry);
+      unidentifiedLicensesFound.forEach((entry) => {
+        (options.errorOnUnidentified ? console.error : console.warn)(entry);
       });
 
       // never masks the exit code of strong or weak copyleft
-      if (options.errorOnUnknown && exitCode === 0) {
+      if (options.errorOnUnidentified && exitCode === 0) {
         exitCode = 3;
       }
     }
 
-    if (noCopyleftLicensesFound && undeterminedLicensesFound.length === 0) {
+    if (noCopyleftLicensesFound) {
       console.log('✅ No copyleft licenses found');
     }
 
