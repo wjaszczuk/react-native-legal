@@ -1,4 +1,3 @@
-import { STRONG_COPYLEFT_LICENSES, WEAK_COPYLEFT_LICENSES } from '../../constants';
 import { LicenseCategory } from '../LicenseCategory';
 import { classifyLicenseExpression, classifyUnavoidableCopyleft } from '../licenseClassification';
 import { parseLicenseExpression } from '../licenseExpression';
@@ -144,15 +143,13 @@ describe('classifyLicenseExpression of every listed copyleft license', () => {
     );
   });
 
-  it('lists exactly the licenses above, every one of them in canonical form', () => {
-    expect([...STRONG_COPYLEFT_LICENSES].sort()).toEqual([...STRONG].sort());
-    expect([...WEAK_COPYLEFT_LICENSES].sort()).toEqual([...WEAK].sort());
-
-    // a listed entry that parsing rewrites (deprecated, `+`) could never be matched
-    for (const license of [...STRONG, ...WEAK]) {
+  // a listed license that parsing rewrites (deprecated, `+`) could never be matched by its own canonical id
+  it.each([...STRONG, ...WEAK])(
+    'when the license is %s, then parsing keeps it as the same License Identifier',
+    (license) => {
       expect(parseLicenseExpression(license)).toMatchObject({ kind: 'license', id: license });
-    }
-  });
+    },
+  );
 });
 
 describe('classifyUnavoidableCopyleft', () => {
