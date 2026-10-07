@@ -1,3 +1,4 @@
+import { STRONG_COPYLEFT_LICENSES, WEAK_COPYLEFT_LICENSES } from '../../constants';
 import { LicenseCategory } from '../LicenseCategory';
 import { classifyLicenseExpression, classifyUnavoidableCopyleft } from '../licenseClassification';
 import { parseLicenseExpression } from '../licenseExpression';
@@ -66,6 +67,91 @@ describe('classifyLicenseExpression', () => {
     expect(classifyLicenseExpression(parseLicenseExpression('MIT OR GPL-3.0-only'))).toBe(
       LicenseCategory.STRONG_COPYLEFT,
     );
+  });
+});
+
+describe('classifyLicenseExpression of copyleft families', () => {
+  it.each([
+    ['GPL-1.0', LicenseCategory.STRONG_COPYLEFT],
+    ['GPL-1.0+', LicenseCategory.STRONG_COPYLEFT],
+    ['GPL-1.0-only', LicenseCategory.STRONG_COPYLEFT],
+    ['AGPL-1.0', LicenseCategory.STRONG_COPYLEFT],
+    ['AGPL-1.0-or-later', LicenseCategory.STRONG_COPYLEFT],
+    ['AGPL-3.0', LicenseCategory.STRONG_COPYLEFT],
+    ['GPL-3.0+', LicenseCategory.STRONG_COPYLEFT],
+    ['GPL-2.0-with-classpath-exception', LicenseCategory.STRONG_COPYLEFT],
+    ['LGPL-2.1+', LicenseCategory.WEAK_COPYLEFT],
+    ['LGPL-3.0', LicenseCategory.WEAK_COPYLEFT],
+    ['GPL', LicenseCategory.UNKNOWN],
+    ['LGPL', LicenseCategory.UNKNOWN],
+  ])('when the license is %s, then it is %s', (license, expected) => {
+    expect(classifyLicenseExpression(parseLicenseExpression(license), 'most-restrictive')).toBe(expected);
+  });
+});
+
+describe('classifyLicenseExpression of every listed copyleft license', () => {
+  const STRONG = [
+    'GPL-1.0-only',
+    'GPL-1.0-or-later',
+    'GPL-2.0-only',
+    'GPL-2.0-or-later',
+    'GPL-2.0-with-autoconf-exception',
+    'GPL-2.0-with-bison-exception',
+    'GPL-2.0-with-classpath-exception',
+    'GPL-2.0-with-font-exception',
+    'GPL-2.0-with-GCC-exception',
+    'GPL-3.0-with-autoconf-exception',
+    'GPL-3.0-with-GCC-exception',
+    'GPL-3.0-only',
+    'GPL-3.0-or-later',
+    'AGPL-1.0-only',
+    'AGPL-1.0-or-later',
+    'AGPL-3.0-only',
+    'AGPL-3.0-or-later',
+    'EUPL-1.0',
+    'EUPL-1.1',
+    'EUPL-1.2',
+    'OSL-1.0',
+    'OSL-1.1',
+    'OSL-2.0',
+    'OSL-2.1',
+    'OSL-3.0',
+  ];
+  const WEAK = [
+    'CDDL-1.0',
+    'CDDL-1.1',
+    'EPL-1.0',
+    'EPL-2.0',
+    'LGPL-2.0-only',
+    'LGPL-2.0-or-later',
+    'LGPL-2.1-only',
+    'LGPL-2.1-or-later',
+    'LGPL-3.0-only',
+    'LGPL-3.0-or-later',
+    'MPL-1.1',
+    'MPL-2.0',
+  ];
+
+  it.each(STRONG)('when the license is %s, then it is strong copyleft', (license) => {
+    expect(classifyLicenseExpression(parseLicenseExpression(license), 'most-restrictive')).toBe(
+      LicenseCategory.STRONG_COPYLEFT,
+    );
+  });
+
+  it.each(WEAK)('when the license is %s, then it is weak copyleft', (license) => {
+    expect(classifyLicenseExpression(parseLicenseExpression(license), 'most-restrictive')).toBe(
+      LicenseCategory.WEAK_COPYLEFT,
+    );
+  });
+
+  it('lists exactly the licenses above, every one of them in canonical form', () => {
+    expect([...STRONG_COPYLEFT_LICENSES].sort()).toEqual([...STRONG].sort());
+    expect([...WEAK_COPYLEFT_LICENSES].sort()).toEqual([...WEAK].sort());
+
+    // a listed entry that parsing rewrites (deprecated, `+`) could never be matched
+    for (const license of [...STRONG, ...WEAK]) {
+      expect(parseLicenseExpression(license)).toMatchObject({ kind: 'license', id: license });
+    }
   });
 });
 

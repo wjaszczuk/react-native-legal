@@ -70,7 +70,11 @@ describe('parseLicenseExpression: leaf semantics', () => {
     // deprecated identifiers are upgraded
     ['GPL-2.0', license('GPL-2.0-only', { declaredId: 'GPL-2.0' })],
     ['LGPL-2.1', license('LGPL-2.1-only', { declaredId: 'LGPL-2.1' })],
+    ['GPL-1.0', license('GPL-1.0-only', { declaredId: 'GPL-1.0' })],
+    ['AGPL-1.0', license('AGPL-1.0-only', { declaredId: 'AGPL-1.0' })],
+    ['AGPL-3.0', license('AGPL-3.0-only', { declaredId: 'AGPL-3.0' })],
     // deprecated + plus: both are normalized
+    ['GPL-1.0+', license('GPL-1.0-or-later', { declaredId: 'GPL-1.0', plus: true })],
     ['GPL-2.0+', license('GPL-2.0-or-later', { declaredId: 'GPL-2.0', plus: true })],
     // a deprecated identifier with no -only counterpart stays as written
     ['GPL-2.0-with-classpath-exception', license('GPL-2.0-with-classpath-exception')],
