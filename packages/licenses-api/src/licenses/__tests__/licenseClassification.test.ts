@@ -187,29 +187,37 @@ describe('classifyUnavoidableCopyleft', () => {
     },
   );
 
-  // undetermined: an Unknown operand could require more than the known category
+  // undetermined: an Unknown operand could require more than the known category under the OR Policy
   it.each([
-    ['MIT', false],
-    ['MIT OR GPL-3.0-only', false],
-    ['LGPL-2.1-only', false],
+    ['MIT', false, false],
+    ['MIT OR GPL-3.0-only', false, false],
+    ['LGPL-2.1-only', false, false],
     // strong copyleft is already the most restrictive known category
-    ['GPL-3.0-only AND LicenseRef-Custom', false],
-    ['GPL-3.0-only OR LicenseRef-Custom', false],
-    ['MIT AND LicenseRef-Custom', true],
-    ['MIT OR LicenseRef-Custom', true],
-    ['LGPL-2.1-only AND LicenseRef-Custom', true],
-    ['(MIT OR LicenseRef-Custom) AND Apache-2.0', true],
+    ['GPL-3.0-only AND LicenseRef-Custom', false, false],
+    ['GPL-3.0-only OR LicenseRef-Custom', false, false],
+    ['MIT AND LicenseRef-Custom', true, true],
+    ['LGPL-2.1-only AND LicenseRef-Custom', true, true],
+    // an Unknown operand of OR can only be avoided by choosing the other operand, so only the least restrictive
+    // OR Policy lets the known operand settle the result
+    ['MIT OR LicenseRef-Custom', true, false],
+    ['LGPL-2.1-only OR LicenseRef-Custom', true, false],
+    ['(MIT OR LicenseRef-Custom) AND Apache-2.0', true, false],
+    ['(MIT OR LicenseRef-Custom) AND LicenseRef-Other', true, true],
+    ['LicenseRef-Custom OR LicenseRef-Other', true, true],
     // a wholly Unknown expression may hide copyleft the parser could not read
-    ['LicenseRef-Custom', true],
-    ['UNLICENSED', true],
-    ['SEE LICENSE IN LICENSE.md', true],
-    ['GPL-3.0-only OR Foo-1.0', true],
-  ] satisfies [string, boolean][])('when raw license is %s, then undetermined is %s', (rawLicense, undetermined) => {
-    const expression = parseLicenseExpression(rawLicense);
+    ['LicenseRef-Custom', true, true],
+    ['UNLICENSED', true, true],
+    ['SEE LICENSE IN LICENSE.md', true, true],
+    ['GPL-3.0-only OR Foo-1.0', true, true],
+  ] satisfies [string, boolean, boolean][])(
+    'when raw license is %s, then undetermined is %s under most-restrictive and %s under least-restrictive',
+    (rawLicense, mostRestrictiveResult, leastRestrictiveResult) => {
+      const expression = parseLicenseExpression(rawLicense);
 
-    expect(classifyUnavoidableCopyleft(expression, 'most-restrictive').undetermined).toBe(undetermined);
-    expect(classifyUnavoidableCopyleft(expression, 'least-restrictive').undetermined).toBe(undetermined);
-  });
+      expect(classifyUnavoidableCopyleft(expression, 'most-restrictive').undetermined).toBe(mostRestrictiveResult);
+      expect(classifyUnavoidableCopyleft(expression, 'least-restrictive').undetermined).toBe(leastRestrictiveResult);
+    },
+  );
 
   it('when license is unknown with no raw value, then it requires no known copyleft but is undetermined', () => {
     expect(classifyUnavoidableCopyleft({ kind: 'unknown', raw: null }, 'most-restrictive')).toEqual({

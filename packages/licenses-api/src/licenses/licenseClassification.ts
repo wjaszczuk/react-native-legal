@@ -90,8 +90,9 @@ export interface UnavoidableCopyleft {
  * - an expression with no known operand requires no copyleft.
  *
  * Ignoring an Unknown operand can also understate the result (`MIT AND LicenseRef-Custom`, or an expression
- * that is wholly Unknown), so the result says when that happened: `undetermined` is `true` when the expression
- * has an Unknown operand and the category is not already strong copyleft, the most restrictive known category.
+ * that is wholly Unknown), so the result says when that happened: `undetermined` is `true` when an Unknown operand
+ * could require more than the category under the OR Policy and the category is not already strong copyleft,
+ * the most restrictive known category. `MIT OR LicenseRef-Custom` is only undetermined under the most restrictive OR Policy.
  *
  * @param expression the License Expression to check
  * @param orPolicy the OR Policy applied to every OR in the expression; defaults to {@link DEFAULT_OR_POLICY}
@@ -111,19 +112,28 @@ export function classifyUnavoidableCopyleft(
 
   return {
     category,
-    undetermined: category !== LicenseCategory.STRONG_COPYLEFT && hasUnknownOperand(expression),
+    undetermined: category !== LicenseCategory.STRONG_COPYLEFT && hasUnknownOperand(expression, orPolicy),
   };
 }
 
-function hasUnknownOperand(expression: LicenseExpression): boolean {
+/**
+ * Whether an Unknown operand could require more than {@link findKnownCopyleft} found under the OR Policy.
+ *
+ * An OR with a known operand only has this risk under the most restrictive OR Policy: under the least restrictive
+ * one the known operand can always be chosen instead of the Unknown one.
+ */
+function hasUnknownOperand(expression: LicenseExpression, orPolicy: OrPolicy): boolean {
   switch (expression.kind) {
     case 'unknown':
       return true;
     case 'license':
-      return classifyLicenseExpression(expression) === LicenseCategory.UNKNOWN;
+      return classifyLicenseExpression(expression, orPolicy) === LicenseCategory.UNKNOWN;
     case 'and':
+      return hasUnknownOperand(expression.left, orPolicy) || hasUnknownOperand(expression.right, orPolicy);
     case 'or':
-      return hasUnknownOperand(expression.left) || hasUnknownOperand(expression.right);
+      return orPolicy === 'least-restrictive'
+        ? hasUnknownOperand(expression.left, orPolicy) && hasUnknownOperand(expression.right, orPolicy)
+        : hasUnknownOperand(expression.left, orPolicy) || hasUnknownOperand(expression.right, orPolicy);
   }
 }
 
