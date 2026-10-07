@@ -108,7 +108,7 @@ Use `parseLicenseExpression`, `renderLicenseExpression` and `classifyLicenseExpr
 - **Permissive**: Licenses that allow for more flexible use (e.g., MIT, Apache-2.0)
 - **Unknown**: Missing, unrecognised or ambiguous declarations (e.g., `UNLICENSED`, `SEE LICENSE IN …`, `BSD`, `LicenseRef-*`)
 
-`AND` always takes the most restrictive operand, `WITH` and `+` take the category of the base license, and `OR` follows the OR Policy passed to `classifyLicenseExpression`: `'most-restrictive'` (the default, exported as `DEFAULT_OR_POLICY`) or `'least-restrictive'` (the CLI equivalent of `--or-policy`). `classifyUnavoidableCopyleft` tells whether copyleft cannot be avoided under a given OR Policy.
+`AND` always takes the most restrictive operand, `WITH` and `+` take the category of the base license, and `OR` follows the OR Policy passed to `classifyLicenseExpression`: `'most-restrictive'` (the default, exported as `DEFAULT_OR_POLICY`) or `'least-restrictive'` (the CLI equivalent of `--or-policy`). `classifyUnavoidableCopyleft` tells which copyleft cannot be avoided under a given OR Policy. It ignores Unknown operands, so it returns `{ category, undetermined }`: `undetermined` is `true` when an Unknown operand could require more than `category` (for example `MIT AND LicenseRef-Custom`, or a license the parser could not read), so a permissive `category` is not proof that no copyleft applies.
 
 ### Monorepo Support
 

@@ -182,15 +182,40 @@ describe('classifyUnavoidableCopyleft', () => {
     (rawLicense, mostRestrictiveResult, leastRestrictiveResult) => {
       const expression = parseLicenseExpression(rawLicense);
 
-      expect(classifyUnavoidableCopyleft(expression, 'most-restrictive')).toBe(mostRestrictiveResult);
-      expect(classifyUnavoidableCopyleft(expression, 'least-restrictive')).toBe(leastRestrictiveResult);
+      expect(classifyUnavoidableCopyleft(expression, 'most-restrictive').category).toBe(mostRestrictiveResult);
+      expect(classifyUnavoidableCopyleft(expression, 'least-restrictive').category).toBe(leastRestrictiveResult);
     },
   );
 
-  it('when license is unknown with no raw value, then it requires no known copyleft', () => {
-    expect(classifyUnavoidableCopyleft({ kind: 'unknown', raw: null }, 'most-restrictive')).toBe(
-      LicenseCategory.PERMISSIVE,
-    );
+  // undetermined: an Unknown operand could require more than the known category
+  it.each([
+    ['MIT', false],
+    ['MIT OR GPL-3.0-only', false],
+    ['LGPL-2.1-only', false],
+    // strong copyleft is already the most restrictive known category
+    ['GPL-3.0-only AND LicenseRef-Custom', false],
+    ['GPL-3.0-only OR LicenseRef-Custom', false],
+    ['MIT AND LicenseRef-Custom', true],
+    ['MIT OR LicenseRef-Custom', true],
+    ['LGPL-2.1-only AND LicenseRef-Custom', true],
+    ['(MIT OR LicenseRef-Custom) AND Apache-2.0', true],
+    // a wholly Unknown expression may hide copyleft the parser could not read
+    ['LicenseRef-Custom', true],
+    ['UNLICENSED', true],
+    ['SEE LICENSE IN LICENSE.md', true],
+    ['GPL-3.0-only OR Foo-1.0', true],
+  ] satisfies [string, boolean][])('when raw license is %s, then undetermined is %s', (rawLicense, undetermined) => {
+    const expression = parseLicenseExpression(rawLicense);
+
+    expect(classifyUnavoidableCopyleft(expression, 'most-restrictive').undetermined).toBe(undetermined);
+    expect(classifyUnavoidableCopyleft(expression, 'least-restrictive').undetermined).toBe(undetermined);
+  });
+
+  it('when license is unknown with no raw value, then it requires no known copyleft but is undetermined', () => {
+    expect(classifyUnavoidableCopyleft({ kind: 'unknown', raw: null }, 'most-restrictive')).toEqual({
+      category: LicenseCategory.PERMISSIVE,
+      undetermined: true,
+    });
   });
 });
 
@@ -210,14 +235,14 @@ describe('deprecated identifiers with a built-in License Exception', () => {
 
     for (const orPolicy of ['most-restrictive', 'least-restrictive'] as const) {
       expect(classifyLicenseExpression(expression, orPolicy)).toBe(LicenseCategory.STRONG_COPYLEFT);
-      expect(classifyUnavoidableCopyleft(expression, orPolicy)).toBe(LicenseCategory.STRONG_COPYLEFT);
+      expect(classifyUnavoidableCopyleft(expression, orPolicy).category).toBe(LicenseCategory.STRONG_COPYLEFT);
     }
   });
 
   it('when such an identifier is one operand of OR, then OR Policy decides as for any strong copyleft', () => {
     const expression = parseLicenseExpression('MIT OR GPL-2.0-with-classpath-exception');
 
-    expect(classifyUnavoidableCopyleft(expression, 'most-restrictive')).toBe(LicenseCategory.STRONG_COPYLEFT);
-    expect(classifyUnavoidableCopyleft(expression, 'least-restrictive')).toBe(LicenseCategory.PERMISSIVE);
+    expect(classifyUnavoidableCopyleft(expression, 'most-restrictive').category).toBe(LicenseCategory.STRONG_COPYLEFT);
+    expect(classifyUnavoidableCopyleft(expression, 'least-restrictive').category).toBe(LicenseCategory.PERMISSIVE);
   });
 });

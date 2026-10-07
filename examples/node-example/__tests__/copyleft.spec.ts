@@ -2,7 +2,7 @@ import path from 'node:path';
 
 import { runLicenseKit } from '../__utils__/utils';
 
-type CopyleftSection = 'strong' | 'weak';
+type CopyleftSection = 'strong' | 'weak' | 'undetermined';
 
 const FIXTURE_ROOTS_DIR = path.resolve(__dirname, '..', '..', 'packages');
 
@@ -19,7 +19,9 @@ function parseCopyleftOutput(stderr: string) {
   let section: CopyleftSection | undefined;
 
   for (const line of stderr.split('\n')) {
-    if (line.includes('Weak copyleft licenses found')) {
+    if (line.includes('Copyleft could not be ruled out')) {
+      section = 'undetermined';
+    } else if (line.includes('Weak copyleft licenses found')) {
       section = 'weak';
     } else if (line.includes('Copyleft licenses found')) {
       section = 'strong';
@@ -176,6 +178,9 @@ describe('license-kit copyleft', () => {
       ],
       ['Unknown Licenses alone do not fail', 0, 'unknown-licenses', []],
       ['Unknown Licenses alone do not fail with --error-on-weak', 0, 'unknown-licenses', ['--error-on-weak']],
+      ['Unknown Licenses fail with --error-on-unknown', 3, 'unknown-licenses', ['--error-on-unknown']],
+      ['strong copyleft keeps exit code 1 with --error-on-unknown', 1, 'license-ref', ['--error-on-unknown']],
+      ['permissive packages pass with --error-on-unknown', 0, 'no-copyleft', ['--error-on-unknown']],
     ] as [string, number, string, string[]][])('%s: exits with %d', async (_scenario, expectedExitCode, root, args) => {
       const { exitCode } = await runCopyleftCommand([
         '--root',
@@ -184,6 +189,18 @@ describe('license-kit copyleft', () => {
       ]);
 
       expect(exitCode).toBe(expectedExitCode);
+    });
+
+    it('when a package has an Unknown License, then it is listed as undetermined and the result is not clean', async () => {
+      const { exitCode, stdout, stderr } = await runCopyleftCommand([
+        '--root',
+        path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-unknown-licenses'),
+      ]);
+
+      expect(exitCode).toBe(0);
+      expect(stderr).toMatch('Copyleft could not be ruled out');
+      expect(Object.values(parseCopyleftOutput(stderr)).every(({ section }) => section === 'undetermined')).toBe(true);
+      expect(stdout).not.toMatch('No copyleft licenses found');
     });
 
     it('when a package ships several license files, then its line lists all of them', async () => {
