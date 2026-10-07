@@ -1,4 +1,5 @@
 import child_process from 'node:child_process';
+import { stripVTControlCharacters } from 'node:util';
 
 /**
  * Returns the internal representation format keys for the dependencies in a package.json file.
@@ -43,7 +44,7 @@ export function stripVersionSuffixes(listOfResults: string[]): string[] {
 
 /**
  * Runs the `license-kit` CLI of the workspace with the given arguments.
- * Never rejects: a failing command resolves with its (non-zero) exit code.
+ * Output is stripped of ANSI escape codes, as CI forces colors on. Never rejects: a failing command resolves with its (non-zero) exit code.
  */
 export function runLicenseKit(args: string[] = []) {
   return new Promise<{ exitCode: number; stdout: string; stderr: string }>((resolve) => {
@@ -51,7 +52,11 @@ export function runLicenseKit(args: string[] = []) {
       `yarn license-kit ${args.join(' ')}`,
       { maxBuffer: 1024 * 1024 * 100 }, // 100MB
       (error, stdout, stderr) => {
-        resolve({ exitCode: typeof error?.code === 'number' ? error.code : 0, stdout, stderr });
+        resolve({
+          exitCode: typeof error?.code === 'number' ? error.code : 0,
+          stdout: stripVTControlCharacters(stdout),
+          stderr: stripVTControlCharacters(stderr),
+        });
       },
     );
   });
