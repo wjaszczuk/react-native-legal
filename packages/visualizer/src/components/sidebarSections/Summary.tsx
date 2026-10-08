@@ -1,4 +1,4 @@
-import { LicenseCategory, categorizeLicense } from '@callstack/licenses';
+import { LicenseCategory, classifyLicenseExpression } from '@callstack/licenses';
 import { RefreshTwoTone } from '@mui/icons-material';
 import { Alert, Box, Button, CircularProgress, LinearProgress, Skeleton, Stack, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SummarizerState, useSummarizerStore } from '@/store/summarizerStore';
 import { useVisualizerStore } from '@/store/visualizerStore';
 import { buildDependencyGraph } from '@/utils/buildDependencyGraph';
+import { renderDisplayLicense } from '@/utils/licenseDisplayUtils';
 
 import ExternalLink from '../ExternalLink';
 import MarkdownBlock from '../MarkdownBlock';
@@ -14,7 +15,7 @@ import { useTabsStyles } from './styles';
 
 export default function Summary() {
   const { classes } = useTabsStyles();
-  const { selectedRoot, report } = useVisualizerStore();
+  const { selectedRoot, report, orPolicy } = useVisualizerStore();
   const { ensureInitialized, tldrSummarizer, keyPointsSummarizer, summarizerDownloadProgress, summarizerState } =
     useSummarizerStore();
 
@@ -36,7 +37,7 @@ export default function Summary() {
     const taskToken = ++lastSummarizationTokenRef.current;
 
     const markdownProblematicDependencyChains = Object.entries(report)
-      .filter(([, license]) => categorizeLicense(license.type) !== LicenseCategory.PERMISSIVE)
+      .filter(([, license]) => classifyLicenseExpression(license.license, orPolicy) !== LicenseCategory.PERMISSIVE)
       .map(([packageKey, license]) => {
         const { graph } = buildDependencyGraph(report, report[packageKey]);
 
@@ -65,7 +66,7 @@ export default function Summary() {
           predecessorsBuff = newPredecessorsBuff;
         }
 
-        return `- \`${packageKey}\`: ${license.type} license${
+        return `- \`${packageKey}\`: ${renderDisplayLicense(license)} license${
           license.parentPackages.length
             ? `, is introduced to the project by the following libraries: ${Array.from(predecessors)
                 .toReversed()
@@ -98,7 +99,7 @@ export default function Summary() {
         }
       },
     );
-  }, [report, selectedRoot, regenerateSummaryToken, tldrSummarizer, keyPointsSummarizer]);
+  }, [report, selectedRoot, orPolicy, regenerateSummaryToken, tldrSummarizer, keyPointsSummarizer]);
 
   const regenerateSummary = useCallback(() => {
     setRegenerateSummaryToken((previous) => previous + 1);

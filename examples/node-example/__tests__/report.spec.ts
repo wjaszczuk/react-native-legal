@@ -1,5 +1,5 @@
-import child_process from 'node:child_process';
 import { platform } from 'node:os';
+import path from 'node:path';
 
 import {
   dependencies as licenseKitDependenciesObj,
@@ -13,6 +13,7 @@ import {
 import {
   dependencyMappingToCorrespondingKey,
   getDependencyCorrespondingKey,
+  runLicenseKit,
   stripVersionSuffixes,
 } from '../__utils__/utils';
 import {
@@ -35,25 +36,121 @@ const sharedDevDependencies = dependencyMappingToCorrespondingKey(sharedDevDepen
 // below: correct the expected license-kit version (expected result) to match the actual version instead of specified version
 devDependencies[Object.keys(devDependenciesObj).indexOf('license-kit')] = `license-kit@${licenseKitVersion}`;
 
-async function runReportCommandForJsonOutput(args: string[] = []) {
-  const command = `yarn workspace license-kit-node-example report${args ? ` ${args.join(' ')}` : ''}`;
-
-  const output = await new Promise<string>((resolve) => {
-    child_process.exec(
-      command,
-      {
-        maxBuffer: 1024 * 1024 * 100, // 100MB
-      },
-      (_, stdout) => {
-        resolve(stdout);
-      },
-    );
-  });
-
-  return JSON.parse(output);
+async function runLicenseKitStdout(args: string[]) {
+  return (await runLicenseKit(args)).stdout;
 }
 
+async function runReportCommandForJsonOutput(args: string[] = []) {
+  return JSON.parse(await runLicenseKitStdout(['report', ...args]));
+}
+
+const FIXTURE_ROOTS_DIR = path.resolve(__dirname, '..', '..', 'packages');
+
 describe('license-kit report', () => {
+  describe('with a License Exception', () => {
+    const root = path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-with-exception');
+    const packageName = '@callstack/example-license-gpl-2.0-with-classpath-exception';
+
+    it('when format is json, then the leaf keeps the exception', async () => {
+      const json = await runReportCommandForJsonOutput(['--root', root]);
+
+      expect(json[`${packageName}@1.0.0`]).toMatchObject({
+        rawLicense: 'GPL-2.0-only WITH Classpath-exception-2.0',
+        license: { kind: 'license', id: 'GPL-2.0-only', exception: 'Classpath-exception-2.0' },
+        licenseIds: ['GPL-2.0-only'],
+      });
+    });
+
+    it.each(['text', 'markdown'])('when format is %s, then it prints the exception', async (format) => {
+      const output = await runLicenseKitStdout(['report', '--root', root, '--format', format]);
+
+      expect(output).toMatch('GPL-2.0-only WITH Classpath-exception-2.0');
+    });
+  });
+
+  it('when a package uses the legacy licenses array, then the Raw License is its types joined with OR', async () => {
+    const json = await runReportCommandForJsonOutput([
+      '--root',
+      path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-legacy-licenses-array'),
+    ]);
+
+    expect(json['@callstack/example-license-legacy-licenses-array@1.0.0']).toMatchObject({
+      rawLicense: 'MIT OR Apache-2.0',
+      license: {
+        kind: 'or',
+        left: { kind: 'license', id: 'MIT' },
+        right: { kind: 'license', id: 'Apache-2.0' },
+      },
+      licenseIds: ['MIT', 'Apache-2.0'],
+    });
+  });
+
+  it('when licenses are Unknown, then report keeps the Raw License and has no License Identifiers', async () => {
+    const json = await runReportCommandForJsonOutput([
+      '--root',
+      path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-unknown-licenses'),
+    ]);
+
+    expect(json['@callstack/example-license-unlicensed@1.0.0']).toMatchObject({
+      rawLicense: 'UNLICENSED',
+      license: { kind: 'unknown', raw: 'UNLICENSED' },
+      licenseIds: [],
+    });
+    expect(json['@callstack/example-license-see-license-in@1.0.0']).toMatchObject({
+      rawLicense: 'SEE LICENSE IN LICENSE.md',
+      license: { kind: 'unknown', raw: 'SEE LICENSE IN LICENSE.md' },
+      licenseIds: [],
+    });
+  });
+
+  describe('with a Dual License shipping LICENSE-MIT and LICENSE-APACHE', () => {
+    const key = '@callstack/example-license-mit-or-apache-2.0@1.0.0';
+
+    it('when format is json, then licenseFiles has both files linked to their License Identifiers', async () => {
+      const json = await runReportCommandForJsonOutput();
+
+      expect(json[key].licenseFiles).toEqual([
+        expect.objectContaining({ file: 'LICENSE-APACHE', licenseId: 'Apache-2.0', content: expect.any(String) }),
+        expect.objectContaining({ file: 'LICENSE-MIT', licenseId: 'MIT', content: expect.any(String) }),
+      ]);
+    });
+
+    it('when format is text, then both license texts are printed', async () => {
+      const output = await runLicenseKitStdout(['report', '--format', 'text']);
+
+      expect(output).toContain('MIT half');
+      expect(output).toContain('Apache-2.0 half');
+      expect(output).toContain('File: LICENSE-APACHE, LICENSE-MIT');
+    });
+
+    it('when format is about-json, then the library has two licenses, each with its own text', async () => {
+      const output = await runReportCommandForJsonOutput(['--format', 'about-json']);
+      const entry = output.find(
+        (item: { normalizedPackageNameWithVersion: string }) =>
+          item.normalizedPackageNameWithVersion === key.replace('/', '_'),
+      );
+
+      expect(entry.libraryJsonPayload.licenses).toHaveLength(2);
+      expect(entry.licenseJsonPayloads.map((l: { hash: string }) => l.hash)).toEqual(entry.libraryJsonPayload.licenses);
+      expect(entry.licenseJsonPayloads).toEqual([
+        expect.objectContaining({ name: 'MIT', content: expect.stringContaining('MIT half') }),
+        expect.objectContaining({ name: 'Apache-2.0', content: expect.stringContaining('Apache-2.0 half') }),
+      ]);
+    });
+  });
+
+  it('analyze --list-unknown lists Unknown Licenses with their Raw License', async () => {
+    const output = await runLicenseKitStdout([
+      'analyze',
+      '--list-unknown',
+      '--root',
+      path.join(FIXTURE_ROOTS_DIR, 'example-copyleft-root-unknown-licenses'),
+    ]);
+
+    expect(output).toMatch(/example-license-unlicensed@1\.0\.0\s+│ UNLICENSED/);
+    expect(output).toMatch(/example-license-see-license-in@1\.0\.0\s+│ SEE LICENSE IN LICENSE\.md/);
+  });
+
   it('including transitive deps, with dev deps with default settings', async () => {
     const json = await runReportCommandForJsonOutput();
 
@@ -61,13 +158,23 @@ describe('license-kit report', () => {
     const mariadbPackageKey = getDependencyCorrespondingKey(dependenciesObj, 'mariadb');
     const zustandPackageKey = getDependencyCorrespondingKey(dependenciesObj, 'zustand');
 
-    expect(json[getDependencyCorrespondingKey(dependenciesObj, 'dhtmlx-gantt')].type).toMatch('GPL-2.0');
-    expect(json[isEvenPackageKey].content).toMatch('MIT License');
-    expect(json[isEvenPackageKey].type).toMatch('MIT');
-    expect(json[mariadbPackageKey].content).toMatch('GNU LESSER GENERAL PUBLIC LICENSE');
-    expect(json[mariadbPackageKey].type).toMatch('LGPL-2.1-or-later');
-    expect(json[zustandPackageKey].content).toMatch('MIT License');
-    expect(json[zustandPackageKey].type).toMatch('MIT');
+    expect(json[getDependencyCorrespondingKey(dependenciesObj, 'dhtmlx-gantt')].licenseIds).toContain('GPL-2.0-only');
+    expect(json[isEvenPackageKey].licenseFiles[0].content).toMatch('MIT License');
+    expect(json[isEvenPackageKey].licenseIds).toEqual(['MIT']);
+    expect(json[mariadbPackageKey].licenseFiles[0].content).toMatch('GNU LESSER GENERAL PUBLIC LICENSE');
+    expect(json[mariadbPackageKey].licenseIds).toEqual(['LGPL-2.1-or-later']);
+    expect(json[zustandPackageKey].licenseFiles[0].content).toMatch('MIT License');
+    expect(json[zustandPackageKey].licenseIds).toEqual(['MIT']);
+
+    for (const entry of Object.values(json)) {
+      expect(entry).toHaveProperty('rawLicense');
+      expect(entry).toHaveProperty('license');
+      expect(entry).toHaveProperty('licenseIds');
+      expect(entry).toHaveProperty('licenseFiles');
+      expect(entry).not.toHaveProperty('type');
+      expect(entry).not.toHaveProperty('content');
+      expect(entry).not.toHaveProperty('file');
+    }
   });
 
   it('without transitive deps and without dev deps', async () => {
@@ -91,6 +198,43 @@ describe('license-kit report', () => {
         Array.from(new Set([...dependencies, ...optionalDependencies, ...devDependencies])).toSorted(),
       ),
     );
+  });
+
+  it('includes rawLicense, the parsed License Expression and licenseIds for single licenses and License Expressions', async () => {
+    const json = await runReportCommandForJsonOutput();
+
+    expect(json[getDependencyCorrespondingKey(dependenciesObj, 'is-even')!]).toMatchObject({
+      rawLicense: 'MIT',
+      license: { kind: 'license', id: 'MIT' },
+      licenseIds: ['MIT'],
+    });
+    expect(json['@callstack/example-license-mit-or-apache-2.0@1.0.0']).toMatchObject({
+      rawLicense: 'MIT OR Apache-2.0',
+      license: { kind: 'or', left: { kind: 'license', id: 'MIT' }, right: { kind: 'license', id: 'Apache-2.0' } },
+      licenseIds: ['MIT', 'Apache-2.0'],
+    });
+    expect(json['@callstack/example-license-mit-or-apache-2.0-and-isc@1.0.0']).toMatchObject({
+      rawLicense: 'MIT OR Apache-2.0 AND ISC',
+      license: {
+        kind: 'or',
+        left: { kind: 'license', id: 'MIT' },
+        right: { kind: 'and', left: { kind: 'license', id: 'Apache-2.0' }, right: { kind: 'license', id: 'ISC' } },
+      },
+      licenseIds: ['MIT', 'Apache-2.0', 'ISC'],
+    });
+    expect(json['@callstack/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0@1.0.0']).toMatchObject({
+      rawLicense: '(Apache-2.0 OR LGPL-3.0-only) AND (MIT OR GPL-2.0-only)',
+      license: {
+        kind: 'and',
+        left: {
+          kind: 'or',
+          left: { kind: 'license', id: 'Apache-2.0' },
+          right: { kind: 'license', id: 'LGPL-3.0-only' },
+        },
+        right: { kind: 'or', left: { kind: 'license', id: 'MIT' }, right: { kind: 'license', id: 'GPL-2.0-only' } },
+      },
+      licenseIds: ['Apache-2.0', 'LGPL-3.0-only', 'MIT', 'GPL-2.0-only'],
+    });
   });
 
   it("does not include private packages' licenses", async () => {
@@ -127,6 +271,14 @@ describe('license-kit report', () => {
     const resultKeys = Object.keys(json);
 
     expect(stripVersionSuffixes(resultKeys.toSorted())).toEqual([
+      '@callstack/example-license-apache-2.0-or-lgpl-3.0-and-mit-or-gpl-2.0',
+      '@callstack/example-license-gpl-3.0-and-mit-or-apache-2.0',
+      '@callstack/example-license-lgpl-2.1-or-gpl-3.0',
+      '@callstack/example-license-mit-and-lgpl-2.1',
+      '@callstack/example-license-mit-or-apache-2.0-and-isc',
+      '@callstack/example-license-mit-or-apache-2.0',
+      '@callstack/example-license-mit-or-gpl-3.0-in-and-with-lgpl-2.1',
+      '@callstack/example-license-mit-or-gpl-3.0',
       '@types/geojson',
       '@types/node',
       'chartjs-plugin-dragdata',

@@ -1,9 +1,10 @@
 import path from 'node:path';
 
-import { type Types, generateAboutLibrariesNPMOutput } from '@callstack/licenses';
+import { type Types, generateAboutLibrariesNPMOutput, renderLicenseExpression } from '@callstack/licenses';
 import * as md from 'ts-markdown-builder';
 
 import type { Format } from './types/Format';
+import { formatLicenseFileNames } from './utils/licenseFileUtils';
 
 export function serializeReport({
   licenses,
@@ -14,10 +15,17 @@ export function serializeReport({
 }): string {
   // convert absolute paths to license files to just filenames (no point in placing those in the file)
   for (const packageInfo of Object.values(licenses)) {
-    if (packageInfo.file) {
-      packageInfo.file = path.basename(packageInfo.file);
+    for (const licenseFile of packageInfo.licenseFiles) {
+      licenseFile.file = path.basename(licenseFile.file);
     }
   }
+
+  const licenseTexts = (packageInfo: Types.License) =>
+    packageInfo.licenseFiles.length > 1
+      ? packageInfo.licenseFiles
+          .map(({ file, content, licenseId }) => `${licenseId ?? file}:\n\n${content}`)
+          .join('\n\n')
+      : packageInfo.licenseFiles[0]?.content;
 
   switch (format) {
     default:
@@ -29,41 +37,47 @@ export function serializeReport({
 
     case 'text':
       return Object.values(licenses)
-        .map(({ name: packageName, version, author, content, description, file, type, url }) =>
-          [
+        .map((packageInfo) => {
+          const { name: packageName, version, author, description, license, licenseFiles, url } = packageInfo;
+
+          return [
             `${packageName} (${version})`,
             url ? `URL: ${url}` : '',
             author ? `Author: ${author}` : '',
-            content ?? '',
+            licenseTexts(packageInfo) ?? '',
             description ? `Description: ${description}` : '',
-            file ? `File: ${file}` : '',
-            type ? `Type: ${type}` : '',
+            licenseFiles.length > 0 ? `File: ${formatLicenseFileNames(licenseFiles)}` : '',
+            `Type: ${renderLicenseExpression(license)}`,
             '',
             '---'.repeat(10),
             '',
-          ].join('\n'),
-        )
+          ].join('\n');
+        })
         .join('\n');
 
     case 'markdown':
       return md
         .joinBlocks(
           Object.values(licenses)
-            .flatMap(({ name: packageName, version, author, content, description, file, type, url }) => [
-              '\n',
-              md.heading(packageName, { level: 2 }),
-              '\n',
-              `Version: ${version}<br/>\n`,
-              url ? `URL: ${url}<br/>\n` : '',
-              author ? `Author: ${author}<br/>\n\n` : '',
-              content ?? '',
-              '\n',
-              description ? `Description: ${description}\n` : '',
-              file ? `\nFile: ${file}\n` : '',
-              type ? `Type: ${type}` : '',
-              '\n',
-              md.horizontalRule,
-            ])
+            .flatMap((packageInfo) => {
+              const { name: packageName, version, author, description, license, licenseFiles, url } = packageInfo;
+
+              return [
+                '\n',
+                md.heading(packageName, { level: 2 }),
+                '\n',
+                `Version: ${version}<br/>\n`,
+                url ? `URL: ${url}<br/>\n` : '',
+                author ? `Author: ${author}<br/>\n\n` : '',
+                licenseTexts(packageInfo) ?? '',
+                '\n',
+                description ? `Description: ${description}\n` : '',
+                licenseFiles.length > 0 ? `\nFile: ${formatLicenseFileNames(licenseFiles)}\n` : '',
+                `Type: ${renderLicenseExpression(license)}`,
+                '\n',
+                md.horizontalRule,
+              ];
+            })
             .join('\n'),
         )
         .toString();

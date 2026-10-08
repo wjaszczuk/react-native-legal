@@ -1,0 +1,14 @@
+{
+  "name": "@callstack/example-license-legacy-licenses-array",
+  "version": "1.0.0",
+  "description": "Test package with the legacy licenses array, for the license-kit integration tests",
+  "licenses": [
+    {
+      "type": "MIT"
+    },
+    {
+      "type": "Apache-2.0"
+    }
+  ],
+  "packageManager": "yarn@3.6.1"
+}

@@ -12,7 +12,7 @@ export interface LicenseStats {
   byCategory: Record<LicenseCategory, number>;
 
   /**
-   * Mapping of license name to count of packages with that license
+   * Mapping of rendered License Expression to count of packages with that expression
    */
   byLicense: Record<string, number>;
 

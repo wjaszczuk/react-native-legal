@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { glob } from 'glob';
 
+import { collectLicenseIds, parseLicenseExpression } from '../licenses';
 import type {
   AboutLibrariesLibraryJsonPayload,
   AboutLibrariesLicenseJsonPayload,
@@ -76,14 +77,6 @@ function scanPackage(
     const localPackageJson = require(path.resolve(localPackageJsonPath));
 
     if (localPackageJson.private !== true) {
-      const licenseFiles = glob.sync('LICEN{S,C}E{.md,}', {
-        cwd: path.dirname(localPackageJsonPath),
-        absolute: true,
-        nocase: true,
-        nodir: true,
-        ignore: '**/{__tests__,__fixtures__,__mocks__}/**',
-      });
-
       const resolvedVersionPackageKey = `${packageName}@${localPackageJson.version}`;
 
       let parentPackageInfo: ParentPackageInfo | undefined;
@@ -101,13 +94,19 @@ function scanPackage(
           parentPackageInfo,
         ];
       } else {
+        const rawLicense = PackageUtils.parseLicenseField(localPackageJson) ?? null;
+        const license = parseLicenseExpression(rawLicense);
+        const licenseIds = collectLicenseIds(license);
+        const licenseFiles = PackageUtils.readLicenseFiles(path.dirname(localPackageJsonPath), licenseIds);
+
         result[resolvedVersionPackageKey] = {
           name: packageName,
           author: PackageUtils.parseAuthorField(localPackageJson),
-          content: licenseFiles?.[0] ? fs.readFileSync(licenseFiles[0], { encoding: 'utf-8' }) : undefined,
-          file: licenseFiles?.[0] ? licenseFiles[0] : undefined,
           description: localPackageJson.description,
-          type: PackageUtils.parseLicenseField(localPackageJson),
+          rawLicense,
+          license,
+          licenseIds,
+          licenseFiles,
           url: PackageUtils.parseRepositoryFieldToUrl(localPackageJson),
           version: localPackageJson.version,
           requiredVersion,
@@ -236,13 +235,17 @@ export function generateLicensePlistNPMOutput(licenses: AggregatedLicensesMappin
       renames[normalizedPackageNameWithVersion] = license.name;
     }
 
-    const relativeLicenseFile = license.file ? path.relative(iosProjectPath, license.file) : undefined;
+    // LicensePlist holds one `file`/`body` per package: a single license file is referenced directly,
+    // otherwise every license text is concatenated into the body under a per-license heading
+    const singleLicenseFile = license.licenseFiles.length === 1 ? license.licenseFiles[0].file : undefined;
 
     return {
       name: normalizedPackageNameWithVersion,
       version: license.version,
       ...(license.url && { source: license.url }),
-      ...(license.file ? { file: relativeLicenseFile } : { body: license.content ?? license.type ?? 'UNKNOWN' }),
+      ...(singleLicenseFile
+        ? { file: path.relative(iosProjectPath, singleLicenseFile) }
+        : { body: PackageUtils.buildLicensePlistBody(license) }),
     } as LicensePlistPayload;
   });
 
@@ -341,45 +344,34 @@ export function writeLicensePlistNPMOutput(
  * @see {@link writeAboutLibrariesNPMOutput}
  */
 export function generateAboutLibrariesNPMOutput(licenses: AggregatedLicensesMapping): AboutLibrariesLikePackageInfo[] {
-  return Object.entries(licenses)
-    .map(([packageKey, license]) => {
-      return {
-        artifactVersion: license.version,
-        content: license.content ?? '',
-        description: license.description ?? '',
-        developers: [{ name: license.author ?? '', organisationUrl: '' }],
-        licenses: [PackageUtils.prepareAboutLibrariesLicenseField(license)],
-        name: license.name,
-        tag: '',
-        type: license.type,
-        uniqueId: PackageUtils.normalizePackageName(packageKey),
-        website: license.url,
-      };
-    })
-    .map((jsonPayload) => {
-      const libraryJsonPayload: AboutLibrariesLibraryJsonPayload = {
-        artifactVersion: jsonPayload.artifactVersion,
-        description: jsonPayload.description,
-        developers: jsonPayload.developers,
-        licenses: jsonPayload.licenses,
-        name: jsonPayload.name,
-        tag: jsonPayload.tag,
-        uniqueId: jsonPayload.uniqueId,
-        website: jsonPayload.website,
-      };
-      const licenseJsonPayload: AboutLibrariesLicenseJsonPayload = {
-        content: jsonPayload.content,
-        hash: jsonPayload.licenses[0],
-        name: jsonPayload.type ?? '',
-        url: '',
-      };
+  return Object.entries(licenses).map(([packageKey, license]) => {
+    const uniqueId = PackageUtils.normalizePackageName(packageKey);
+    const licenseJsonPayloads: AboutLibrariesLicenseJsonPayload[] = PackageUtils.prepareAboutLibrariesLicenses(
+      license,
+    ).map(({ name, content }) => ({
+      content,
+      hash: PackageUtils.prepareAboutLibrariesLicenseField(name, content),
+      name,
+      url: '',
+    }));
 
-      return {
-        normalizedPackageNameWithVersion: jsonPayload.uniqueId,
-        libraryJsonPayload,
-        licenseJsonPayload,
-      };
-    });
+    const libraryJsonPayload: AboutLibrariesLibraryJsonPayload = {
+      artifactVersion: license.version,
+      description: license.description ?? '',
+      developers: [{ name: license.author ?? '', organisationUrl: '' }],
+      licenses: licenseJsonPayloads.map(({ hash }) => hash),
+      name: license.name,
+      tag: '',
+      uniqueId,
+      website: license.url,
+    };
+
+    return {
+      normalizedPackageNameWithVersion: uniqueId,
+      libraryJsonPayload,
+      licenseJsonPayloads,
+    };
+  });
 }
 
 /**
@@ -427,17 +419,20 @@ export function writeAboutLibrariesNPMOutput(
     aboutLibrariesLikeOutput = generateAboutLibrariesNPMOutput(licenses);
   }
 
-  aboutLibrariesLikeOutput.forEach(({ normalizedPackageNameWithVersion, libraryJsonPayload, licenseJsonPayload }) => {
+  aboutLibrariesLikeOutput.forEach(({ normalizedPackageNameWithVersion, libraryJsonPayload, licenseJsonPayloads }) => {
     const libraryJsonFilePath = path.join(
       aboutLibrariesConfigLibrariesDirPath,
       `${normalizedPackageNameWithVersion}.json`,
     );
-    const licenseJsonFilePath = path.join(aboutLibrariesConfigLicensesDirPath, `${licenseJsonPayload.hash}.json`);
 
     fs.writeFileSync(libraryJsonFilePath, JSON.stringify(libraryJsonPayload));
 
-    if (!fs.existsSync(licenseJsonFilePath)) {
-      fs.writeFileSync(licenseJsonFilePath, JSON.stringify(licenseJsonPayload));
+    for (const licenseJsonPayload of licenseJsonPayloads) {
+      const licenseJsonFilePath = path.join(aboutLibrariesConfigLicensesDirPath, `${licenseJsonPayload.hash}.json`);
+
+      if (!fs.existsSync(licenseJsonFilePath)) {
+        fs.writeFileSync(licenseJsonFilePath, JSON.stringify(licenseJsonPayload));
+      }
     }
   });
 }

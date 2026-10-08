@@ -1,0 +1,7 @@
+{
+  "name": "@callstack/example-license-gpl-3.0-and-license-ref",
+  "version": "1.0.0",
+  "description": "Test package with strong copyleft next to a custom license, for the license-kit integration tests",
+  "license": "GPL-3.0-only AND LicenseRef-Custom",
+  "packageManager": "yarn@3.6.1"
+}

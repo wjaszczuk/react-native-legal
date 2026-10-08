@@ -1,10 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 
-import type { License, ScanPackageOptionsFactory } from '../../types';
+import type { ScanPackageOptionsFactory } from '../../types';
 import { normalizeRepositoryUrl } from '../../utils/repositoryUtils';
 
-import { sha512 } from './miscUtils';
+export { prepareAboutLibrariesLicenseField, prepareAboutLibrariesLicenses } from './aboutLibrariesLicenses';
+export { buildLicensePlistBody } from './licensePlistBody';
+export { readLicenseFiles } from './licenseFiles';
 
 export function getPackageJsonPath(dependency: string, root?: string) {
   const rootsToSearch = [
@@ -54,21 +56,6 @@ export function normalizePackageName(packageName: string): string {
   return packageName.replace('/', '_');
 }
 
-export function prepareAboutLibrariesLicenseField(license: License) {
-  if (!license.type) {
-    return '';
-  }
-
-  // The returned value is used as a filename under `android/config/licenses/`.
-  // Legacy/compound SPDX expressions like `MIT/X11` or `(MIT OR Apache-2.0)` would
-  // otherwise produce paths containing `/`, `(` or spaces, which causes the writer
-  // to either fail with ENOENT (when a `/` is interpreted as a subdirectory) or
-  // to produce names that are invalid on some filesystems.
-  const sanitizedType = license.type.replace(/[^A-Za-z0-9._-]/g, '_');
-
-  return `${sanitizedType}_${sha512(license.content ?? sanitizedType)}`;
-}
-
 export function parseAuthorField(json: { author: string | { name: string } }) {
   if (typeof json.author === 'object' && typeof json.author.name === 'string') {
     return json.author.name;
@@ -79,13 +66,25 @@ export function parseAuthorField(json: { author: string | { name: string } }) {
   }
 }
 
-export function parseLicenseField(json: { license: string | { type: string } }) {
-  if (typeof json.license === 'object' && typeof json.license.type === 'string') {
+/**
+ * Reads the Raw License from package.json: the `license` string, the legacy `license: { type }` object,
+ * or the legacy `licenses: [{ type }, …]` array, whose types are joined with ` OR `.
+ */
+export function parseLicenseField(json: { license?: string | { type: string }; licenses?: Array<{ type?: string }> }) {
+  if (typeof json.license === 'object' && typeof json.license?.type === 'string') {
     return json.license.type;
   }
 
   if (typeof json.license === 'string') {
     return json.license;
+  }
+
+  if (Array.isArray(json.licenses)) {
+    const types = json.licenses.flatMap((entry) =>
+      typeof entry?.type === 'string' && entry.type.trim() !== '' ? [entry.type] : [],
+    );
+
+    return types.length > 0 ? types.join(' OR ') : undefined;
   }
 }
 

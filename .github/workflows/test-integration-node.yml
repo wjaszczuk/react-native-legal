@@ -10,6 +10,7 @@ on:
       - 'packages/licenses-api/**/*.[tj]sx?'
       - 'examples/node-example/**/*.[tj]sx?'
       - 'examples/node-example/package.json'
+      - 'examples/packages/**/package.json'
 
   push:
     branches:

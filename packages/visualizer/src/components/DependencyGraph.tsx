@@ -21,6 +21,7 @@ import { useVisualizerStore } from '@/store/visualizerStore';
 import type { TextCoordFactory } from '@/types/TextCoordFactory';
 import { buildDependencyGraph } from '@/utils/buildDependencyGraph';
 import { getLicenseWarningColor } from '@/utils/colorUtils';
+import { renderDisplayLicense } from '@/utils/licenseDisplayUtils';
 import { buildPackageKey } from '@/utils/packageUtils';
 import {
   licenseLabelYCoordFactory,
@@ -41,7 +42,7 @@ export default function DependencyGraph({ data }: DependencyGraphProps) {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const { classes } = useStyles();
-  const { selectedRoot, selectRoot, setHoveredLicense } = useVisualizerStore();
+  const { selectedRoot, selectRoot, setHoveredLicense, orPolicy } = useVisualizerStore();
 
   const [isRenderingGraph, setIsRenderingGraph] = useState<boolean>(false);
 
@@ -62,7 +63,7 @@ export default function DependencyGraph({ data }: DependencyGraphProps) {
     return result;
   }, [data, selectedRoot]);
 
-  const licenseAnalysis = useMemo(() => analyzeLicenses(data), [data]);
+  const licenseAnalysis = useMemo(() => analyzeLicenses(data, orPolicy), [data, orPolicy]);
 
   const prepareTextGroupsWithBackgrounds = useTextGroupFactory(graph);
 
@@ -509,7 +510,7 @@ export default function DependencyGraph({ data }: DependencyGraphProps) {
           .attr('fill', textColor)
           .attr('stroke', theme.palette.getContrastText(theme.palette.background.default))
           .attr('stroke-width', 0.2)
-          .text(meta.type ?? '(unknown)')
+          .text(renderDisplayLicense(meta))
           .style('pointer-events', 'none');
       });
 

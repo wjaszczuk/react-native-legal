@@ -30,5 +30,16 @@
   {
     "type": "file",
     "name": "programmatic-usage"
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section-header",
+    "label": "Upgrading"
+  },
+  {
+    "type": "file",
+    "name": "migration-guide"
   }
 ]

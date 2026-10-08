@@ -1,0 +1,67 @@
+---
+sidebar_position: 5
+---
+
+# Migration guide: SPDX License Expressions
+
+`@callstack/licenses` and `license-kit` **1.0.0** parse every package's license declaration as an [SPDX License Expression](https://spdx.github.io/spdx-spec/v3.0.1/annexes/spdx-license-expressions/) instead of treating it as one opaque string. This is a breaking change.
+
+## Behaviour changes
+
+### Dual-licensed packages now fail `copyleft` by default
+
+`A OR B` is classified by the **OR Policy**. It defaults to `most-restrictive`, so a package declaring `MIT OR GPL-3.0` is now classified as strong copyleft and `license-kit copyleft` exits with code `1`. Previously such a package was classified as permissive and passed.
+
+SPDX defines `OR` as the licensee's choice, so you may prefer to rely on the permissive option. Pass `--or-policy least-restrictive` to `analyze`, `copyleft` and `visualize` to restore the previous result:
+
+```bash
+npx license-kit copyleft --or-policy least-restrictive
+```
+
+`AND` always takes the most restrictive operand, whatever the OR Policy. `WITH` and `+` take the category of the base license.
+
+### Unrecognised values are Unknown, not permissive
+
+Values that are not a valid license expression used to be classified as permissive. They are now **Unknown**, and the raw value is preserved:
+
+- `UNLICENSED`, `NONE`, `NOASSERTION`
+- `SEE LICENSE IN …`
+- ambiguous values such as `BSD`, `GPL` and `LGPL` (the variant or version is never guessed)
+- any expression containing an unrecognised identifier, e.g. `MIT OR Foo-1.0`
+
+Use `license-kit analyze --list-unknown` to review them. `copyleft` still fails on `GPL-3.0-only AND LicenseRef-Custom`, because the GPL obligation cannot be avoided.
+
+Common spellings such as `Apache 2.0`, `MIT/X11` and lowercase `mit` are now recognised, deprecated identifiers (`GPL-2.0`) and `+` (`GPL-2.0+`) are normalized (`GPL-2.0-only`, `GPL-2.0-or-later`), and the legacy `licenses: [{ type }]` array is read as an `OR` of its entries.
+
+## Field mapping
+
+The `type`, `content` and `file` fields are removed from scanned entries, from `report --format json` and from the `License` type.
+
+| Removed   | Replacement                                                                                                                           |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`    | `rawLicense` (the declaration as written, or `null`), `license` (the parsed expression) and `licenseIds` (canonical SPDX identifiers) |
+| `content` | `licenseFiles[].content`                                                                                                              |
+| `file`    | `licenseFiles[].file`                                                                                                                 |
+
+`licenseFiles` lists every license file found in the package root (`LICENSE*`, `LICENCE*` and `COPYING*`, case-insensitive). Each item has an optional `licenseId`, set when the file name identifies one License Identifier unambiguously, e.g. `LICENSE-APACHE` → `Apache-2.0`.
+
+```typescript
+// before
+const { type, content, file } = licenses[key];
+
+// after
+import { renderLicenseExpression } from '@callstack/licenses';
+
+const { rawLicense, license, licenseIds, licenseFiles } = licenses[key];
+const normalized = renderLicenseExpression(license); // e.g. 'MIT OR Apache-2.0'
+const { content, file } = licenseFiles[0] ?? {};
+```
+
+## Other changes
+
+- `categorizeLicense` is no longer exported. Parse the declaration with `parseLicenseExpression` and use `classifyLicenseExpression` instead; unlike `categorizeLicense`, it reports unrecognised values as Unknown.
+- `report --format text` and `markdown` print the normalized expression.
+- `report --format about-json` emits one license per License Identifier. On iOS, all license texts of a package are combined into one entry with a heading per license.
+- `analyze` groups its breakdown by the normalized expression.
+
+See the [programmatic usage](./programmatic-usage) page for the new API.

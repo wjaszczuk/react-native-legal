@@ -1,0 +1,7 @@
+{
+  "name": "@callstack/example-license-gpl-3.0-and-mit-or-apache-2.0",
+  "version": "1.0.0",
+  "description": "Test package with a strong copyleft license combined with AND with a Dual License, for the license-kit integration tests",
+  "license": "GPL-3.0-only AND (MIT OR Apache-2.0)",
+  "packageManager": "yarn@3.6.1"
+}

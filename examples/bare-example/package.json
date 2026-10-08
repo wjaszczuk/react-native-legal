@@ -22,6 +22,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@callstack/example-license-gpl-2.0-with-classpath-exception": "workspace:*",
+    "@callstack/example-license-gpl-2.0-with-classpath-exception-with-text": "workspace:*",
+    "@callstack/example-license-lgpl-3.0-plus": "workspace:*",
+    "@callstack/example-license-mit-and-lgpl-2.1": "workspace:*",
+    "@callstack/example-license-mit-or-apache-2.0": "workspace:*",
+    "@callstack/example-license-mit-or-apache-2.0-single-file": "workspace:*",
+    "@callstack/example-license-mit-or-gpl-3.0": "workspace:*",
     "react": "19.2.3",
     "react-native": "0.85.3",
     "react-native-legal": "workspace:*",

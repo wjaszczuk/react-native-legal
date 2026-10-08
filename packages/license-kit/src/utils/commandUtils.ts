@@ -1,9 +1,10 @@
 import process from 'node:process';
 
+import { DEFAULT_OR_POLICY, validOrPolicies } from '@callstack/licenses';
 import type { Command } from 'commander';
 
 import { NON_TAB_HELP_LISTING_SUBLIST_OFFSET } from '../constants';
-import type { CLIReportOptions, CLIScanOptions } from '../types/CLIOptions';
+import type { CLIOrPolicyOptions, CLIReportOptions, CLIScanOptions } from '../types/CLIOptions';
 import { type DevDepsMode, validDevDepsModes } from '../types/DevDepsMode';
 import { type Format, validFormats } from '../types/Format';
 import { type Output } from '../types/Output';
@@ -67,6 +68,29 @@ export function validateCommonScanOptions(options: CLIScanOptions) {
 export function validateCommonReportOptions(options: CLIReportOptions) {
   if (!validFormats.includes(options.format)) {
     console.error(`Invalid format: ${options.format}. Supported formats: ${validFormats.join(', ')}`);
+    process.exit(1);
+  }
+}
+
+/**
+ * Adds the `--or-policy` option, defaulting to {@link DEFAULT_OR_POLICY}.
+ *
+ * Kept separate from {@link curryCommonScanOptions}, so that only commands that classify licenses accept it.
+ */
+export function curryOrPolicyOption(command: Command): Command {
+  return command.option(
+    '--or-policy [policy]',
+    'Controls, which operand of a dual license (`A OR B`) determines its category; `A AND B` always takes the most restrictive one:' +
+      `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 'most-restrictive' (the most restrictive operand)` +
+      `\n${NON_TAB_HELP_LISTING_SUBLIST_OFFSET}- 'least-restrictive' (the least restrictive operand; matches SPDX's "choice" meaning of OR)` +
+      '\n', // newline for auto-description of the default value
+    DEFAULT_OR_POLICY,
+  );
+}
+
+export function validateOrPolicyOption(options: CLIOrPolicyOptions) {
+  if (!validOrPolicies.includes(options.orPolicy)) {
+    console.error(`Invalid OR policy: ${options.orPolicy}. Supported policies: ${validOrPolicies.join(', ')}`);
     process.exit(1);
   }
 }

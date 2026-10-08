@@ -1,5 +1,5 @@
 import type { Types } from '@callstack/licenses';
-import { LicenseCategory, categorizeLicense, getLicenseCategoryDescription } from '@callstack/licenses';
+import { LicenseCategory, getLicenseCategoryDescription, renderLicenseExpression } from '@callstack/licenses';
 import { Box, Switch, Typography, alpha } from '@mui/material';
 import { blue } from '@mui/material/colors';
 import {
@@ -19,6 +19,9 @@ import {
 import * as d3 from 'd3';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Bar, Pie, Radar } from 'react-chartjs-2';
+
+import { useVisualizerStore } from '@/store/visualizerStore';
+import { renderDisplayLicense } from '@/utils/licenseDisplayUtils';
 
 import { useTabsStyles } from './styles';
 
@@ -43,6 +46,19 @@ export type ChartsProps = {
 export default function Charts({ analysis }: ChartsProps) {
   const { classes } = useTabsStyles();
 
+  const { report } = useVisualizerStore();
+
+  // `analysis.byLicense` is keyed by the rendered License Expression; Unknown Licenses get their display label here
+  const displayLabelByLicense = useMemo(() => {
+    const labels: Record<string, string> = {};
+
+    Object.values(report ?? {}).forEach((entry) => {
+      labels[renderLicenseExpression(entry.license)] = renderDisplayLicense(entry);
+    });
+
+    return labels;
+  }, [report]);
+
   const [categoriesBreakdownLogScale, setCategoriesBreakdownLogScale] = useState(false);
 
   // stacked bar chart data - categories with licenses
@@ -65,11 +81,11 @@ export default function Charts({ analysis }: ChartsProps) {
     // create datasets for each license
     const allLicenses = Object.keys(analysis.byLicense);
     const datasets = allLicenses.map((license, index) => {
-      const category = categorizeLicense(license);
+      const category = analysis.categoryByLicense[license];
       const colorScale = d3.scaleSequential(d3.interpolateRainbow).domain([0, allLicenses.length]);
 
       return {
-        label: license,
+        label: displayLabelByLicense[license] ?? license,
         data: categories.map((cat) => (cat === category ? analysis.byLicense[license] : 0)),
         backgroundColor: colorScale(index),
         borderColor: colorScale(index),
@@ -81,7 +97,7 @@ export default function Charts({ analysis }: ChartsProps) {
       labels: categories.map((cat) => getLicenseCategoryDescription(cat)),
       datasets,
     };
-  }, [analysis]);
+  }, [analysis, displayLabelByLicense]);
 
   const stackedBarOptions = {
     responsive: true,
@@ -198,7 +214,7 @@ export default function Charts({ analysis }: ChartsProps) {
   }, [licenseNames]);
 
   const licenseNamesChartData = {
-    labels: licenseNames,
+    labels: licenseNames.map((license) => displayLabelByLicense[license] ?? license),
     datasets: [
       {
         data: licenseCounts,
