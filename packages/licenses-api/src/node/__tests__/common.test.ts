@@ -105,7 +105,7 @@ describe('scanPackageRoots', () => {
       rawLicense: 'MIT',
       license: parseLicenseExpression('MIT'),
       licenseIds: ['MIT'],
-      licenseFiles: [{ file: path.join(root, 'LICENSE'), content: 'MIT License text', licenseId: 'MIT' }],
+      licenseFiles: [{ file: path.join(root, 'LICENSE'), content: 'MIT License text' }],
       author: 'John Doe',
       url: 'https://github.com/example/pkg-a',
       dependencyType: 'dependency',
