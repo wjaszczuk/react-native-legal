@@ -1,5 +1,12 @@
 # @callstack/license-kit-visualizer
 
+## 0.2.3
+
+### Patch Changes
+
+- Updated dependencies [[`dd565f1`](https://github.com/callstackincubator/react-native-legal/commit/dd565f196512cd63f22968631633c7920eb10ec0)]:
+  - @callstack/licenses@1.0.0
+
 ## 0.2.2
 
 ### Patch Changes
