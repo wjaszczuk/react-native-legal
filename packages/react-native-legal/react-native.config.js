@@ -15,14 +15,12 @@ module.exports = {
 
             return 'none';
           },
-          default: 'none',
         },
         {
           name: '--od, --include-optional-deps [boolean]',
           description:
             'Whether to include optionalDependencies in the scan; includeTransitiveDependencies option applies',
           parse: (val) => val !== 'false',
-          default: true,
         },
         {
           name: '--tm, --transitive-deps-mode <string>',
@@ -34,7 +32,6 @@ module.exports = {
 
             return 'all';
           },
-          default: 'all',
         },
         {
           name: '--ds, --dependency-source <string>',
@@ -52,15 +49,15 @@ module.exports = {
       ],
       func: ([], { project: { android, ios } }, args) => {
         const generateLegal = require('./bare-plugin/build').default;
-        /** @type {import('./plugin-utils/build/types').PluginScanOptions} */
+        const { resolvePluginScanOptions } = require('./plugin-utils/build/common');
         const { devDepsMode, includeOptionalDeps, transitiveDepsMode, dependencySource } = args;
 
-        return generateLegal(android?.sourceDir, ios?.sourceDir, {
-          devDepsMode,
-          includeOptionalDeps,
-          transitiveDepsMode,
-          dependencySource,
-        });
+        // the defaults are assigned here (not in the options above), so that the options explicitly passed by the user can be validated
+        return generateLegal(
+          android?.sourceDir,
+          ios?.sourceDir,
+          resolvePluginScanOptions({ devDepsMode, includeOptionalDeps, transitiveDepsMode, dependencySource }),
+        );
       },
     },
   ],

@@ -5,6 +5,44 @@ import { type Types as SharedTypes, scanDependencies, scanPackageRoots } from '@
 import { getMetroPackageRoots } from './metro';
 import type { DependencySource, PluginScanOptions } from './types';
 
+const PACKAGE_JSON_SCAN_OPTION_DEFAULTS = {
+  devDepsMode: 'none',
+  includeOptionalDeps: true,
+  transitiveDepsMode: 'all',
+} as const satisfies Omit<PluginScanOptions, 'dependencySource'>;
+
+const PACKAGE_JSON_SCAN_OPTION_NAMES = Object.keys(PACKAGE_JSON_SCAN_OPTION_DEFAULTS) as Array<
+  keyof typeof PACKAGE_JSON_SCAN_OPTION_DEFAULTS
+>;
+
+/**
+ * Assigns defaults to the options provided by the user.
+ * Must be called with the raw options (before any defaults are assigned), because it validates
+ * that the options scanning `package.json` files are not combined with `dependencySource: 'metro'`, which ignores them.
+ *
+ * @throws When `dependencySource` is `'metro'` and any of the `package.json` scan options is provided
+ */
+export function resolvePluginScanOptions(options: Partial<PluginScanOptions> = {}): PluginScanOptions {
+  const { dependencySource = 'package-json' } = options;
+
+  if (dependencySource === 'metro') {
+    const ignoredOptions = PACKAGE_JSON_SCAN_OPTION_NAMES.filter((name) => options[name] !== undefined);
+
+    if (ignoredOptions.length > 0) {
+      throw new Error(
+        `[react-native-legal] dependencySource: 'metro' cannot be combined with: ${ignoredOptions.join(', ')}. ` +
+          `These options only apply when dependencySource is 'package-json'.`,
+      );
+    }
+  }
+
+  return {
+    ...PACKAGE_JSON_SCAN_OPTION_DEFAULTS,
+    ...Object.fromEntries(Object.entries(options).filter(([, value]) => value !== undefined)),
+    dependencySource,
+  };
+}
+
 export function createPluginScanOptionsFactory(
   pluginScanOptions: PluginScanOptions,
 ): SharedTypes.ScanPackageOptionsFactory {
