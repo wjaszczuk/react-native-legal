@@ -12,7 +12,7 @@ runs:
     - name: Install Maestro CLI
       shell: bash
       run: |
-        export MAESTRO_VERSION=1.41.0
+        export MAESTRO_VERSION=2.11.0
         curl -Ls "https://get.maestro.mobile.dev" | bash
 
     - name: Conditionally install brew packages for iOS
@@ -20,8 +20,9 @@ runs:
       run: |
         if [[ "${{ inputs.target-platform }}" == "ios" ]]; then
           echo "Installing brew packages for iOS..."
-          brew tap facebook/fb
-          brew install facebook/fb/idb-companion
+          brew tap mobile-dev-inc/tap
+          brew trust --formula mobile-dev-inc/tap/maestro
+          brew install mobile-dev-inc/tap/maestro
         else
           echo "Skipping brew install because target platform is ${{ inputs.target-platform }}"
         fi
