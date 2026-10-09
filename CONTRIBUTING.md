@@ -92,6 +92,11 @@ To run the example app on iOS:
 yarn ios
 ```
 
+### Bare RN example app (Metro graph)
+
+`examples/bare-metro-graph-example` is a copy of the bare RN example app (without the e2e tests) whose `legal-generate` script uses the Metro dependency graph (`--dependency-source=metro`) instead of scanning `package.json` files.
+The commands are the same as for the bare RN example app above, run from `examples/bare-metro-graph-example`.
+
 ### Developing Expo Config Plugin
 
 The codebase of Expo Config Plugin is located in:
