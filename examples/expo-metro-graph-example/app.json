@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ReactNativeLegalExpoExample",
-    "slug": "react-native-legal-expo-example",
+    "name": "ReactNativeLegalExpoMetroGraphExample",
+    "slug": "react-native-legal-expo-metro-graph-example",
     "version": "1.0.0",
     "newArchEnabled": true,
     "orientation": "portrait",
@@ -17,7 +17,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.reactnativelegal.expoexample"
+      "bundleIdentifier": "com.reactnativelegal.expometrographexample"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.reactnativelegal.expoexample"
+      "package": "com.reactnativelegal.expometrographexample"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -45,10 +45,9 @@
         }
       ],
       [
-        "react-native-legal", {
-          "devDepsMode": "none",
-          "includeOptionalDeps": true,
-          "transitiveDepsMode": "all"
+        "react-native-legal",
+        {
+          "dependencySource": "metro"
         }
       ]
     ]

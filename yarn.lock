@@ -16712,6 +16712,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"react-native-legal-expo-metro-graph-example@workspace:examples/expo-metro-graph-example":
+  version: 0.0.0-use.local
+  resolution: "react-native-legal-expo-metro-graph-example@workspace:examples/expo-metro-graph-example"
+  dependencies:
+    "@babel/core": "npm:^7.29.7"
+    "@babel/preset-env": "npm:^7.29.7"
+    "@types/react": "npm:^19.2.0"
+    expo: "npm:^56.0.0"
+    expo-build-properties: "npm:^56.0.0"
+    expo-splash-screen: "npm:^56.0.0"
+    expo-status-bar: "npm:^56.0.0"
+    react: "npm:19.2.3"
+    react-native: "npm:0.85.3"
+    react-native-legal: "workspace:*"
+    react-native-legal-common-example-ui: "workspace:*"
+    react-native-safe-area-context: "npm:~5.7.0"
+  languageName: unknown
+  linkType: soft
+
 "react-native-legal@workspace:*, react-native-legal@workspace:packages/react-native-legal":
   version: 0.0.0-use.local
   resolution: "react-native-legal@workspace:packages/react-native-legal"
